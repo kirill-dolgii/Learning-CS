@@ -43,7 +43,6 @@ public:
             this->First = node;
             this->First->Next = tmp;
         }
-
     }
 
     void AddLast(Node* node) {
@@ -54,7 +53,7 @@ public:
     }
 
     void PrintAllList(Node* startNode) {
-        if (startNode != nullptr) {
+        if (!this->IsEmpty()) {
             std::cout << startNode->Data << "\n";
             if (startNode->Next != nullptr) {
                 PrintAllList(startNode->Next);
@@ -62,19 +61,27 @@ public:
         }
     }
 
+    Node* FindByVal(int num) {
+        if (!this->IsEmpty()) {
+            Node* p = this->First;            
+            while (p && p->Data != num) p = p->Next;
+                return (p && p->Data == num) ? p : nullptr;            
+        }
+    }
 };
 
-int main()
-{
+int main() {
     List l = List();
 
     Node n1(nullptr, 10);
     Node n2(nullptr, 13);
     Node n3(nullptr, 17);
+    Node n4(nullptr, 12);
 
     l.AddFirst(&n1);
     l.AddFirst(&n2);
     l.AddLast(&n3);
+    l.AddFirst(&n4);
 
     l.PrintAllList(l.First);
 
