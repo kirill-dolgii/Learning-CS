@@ -68,6 +68,18 @@ public:
                 return (p && p->Data == num) ? p : nullptr;            
         }
     }
+
+    void RemoveFirst() {
+        if (this->IsEmpty()) return;
+            if (this->First == this->Last) {
+                this->First = nullptr;
+                this->Last = nullptr;
+            }
+            else {
+                Node* p = this->First;                
+                this->First = p->Next;
+        }
+    }
 };
 
 int main() {
@@ -83,6 +95,9 @@ int main() {
     l.AddLast(&n3);
     l.AddFirst(&n4);
 
+    l.PrintAllList(l.First);
+
+    l.RemoveFirst();
     l.PrintAllList(l.First);
 
 }
