@@ -1,15 +1,13 @@
 ﻿#include <iostream>
 
+
 struct Node
 {
 public:
     Node* Next;
     int Data;
 
-    Node(Node* next, int data) {
-        this->Next = next;
-        this->Data = data;
-    }
+    Node(int data) : Next(nullptr), Data(data) {}
 };
 
 class List
@@ -24,38 +22,41 @@ public:
     }
 
     List() {
-        this->First = nullptr;
-        this->Last = nullptr;
+        this->First = 0;
+        this->Last = 0;
     }
 
     bool IsEmpty() {
         return this->First == NULL;
     }
 
-    void AddFirst(Node* node) {
-        if (this->IsEmpty()) {
-            this->First = node;
-            this->Last = node;
-        }
+
+    void AddFirst(int num) {
+        Node* p = new Node(num);
+
+        if (this->IsEmpty()) this->AddToEmpty(num);
         else {
             Node* tmp = this->First;
 
-            this->First = node;
+            this->First = p;
             this->First->Next = tmp;
         }
     }
 
-    void AddLast(Node* node) {
-        Node* tmp = this->Last;
+    void AddLast(int num) {
+        if (this->IsEmpty()) this->AddToEmpty(num);
+        else {
+            Node* p = new Node(num);
 
-        this->Last->Next = node;
-        this->Last = node;
+            this->Last->Next = p;
+            this->Last = p;
+        }
     }
 
     void PrintAllList(Node* startNode) {
         if (!this->IsEmpty()) {
             std::cout << startNode->Data << "\n";
-            if (startNode->Next != nullptr) {
+            if (startNode->Next != 0) {
                 PrintAllList(startNode->Next);
             }
         }
@@ -65,39 +66,42 @@ public:
         if (!this->IsEmpty()) {
             Node* p = this->First;            
             while (p && p->Data != num) p = p->Next;
-                return (p && p->Data == num) ? p : nullptr;            
+                return (p && p->Data == num) ? p : 0;            
         }
     }
 
     void RemoveFirst() {
         if (this->IsEmpty()) return;
-            if (this->First == this->Last) {
-                this->First = nullptr;
-                this->Last = nullptr;
-            }
-            else {
-                Node* p = this->First;                
-                this->First = p->Next;
+
+        if (this->First == this->Last) this->Clear();
+        else {
+            Node* p = this->First;                
+            this->First = p->Next;
+
+            delete p;
         }
+    }
+
+
+private:
+    void AddToEmpty(int num) {
+        Node* p = new Node(num);
+
+        this->First = p;
+        this->Last = p;
+    }
+
+    void Clear() {
+        this->First = 0;
+        this->Last= 0;
     }
 };
 
 int main() {
     List l = List();
 
-    Node n1(nullptr, 10);
-    Node n2(nullptr, 13);
-    Node n3(nullptr, 17);
-    Node n4(nullptr, 12);
-
-    l.AddFirst(&n1);
-    l.AddFirst(&n2);
-    l.AddLast(&n3);
-    l.AddFirst(&n4);
-
-    l.PrintAllList(l.First);
+    l.AddFirst(3);
+    l.AddLast(13);
 
     l.RemoveFirst();
-    l.PrintAllList(l.First);
-
 }
