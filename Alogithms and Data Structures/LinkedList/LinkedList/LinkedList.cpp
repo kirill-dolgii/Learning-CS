@@ -121,6 +121,17 @@ public:
         delete nextP;
     }
 
+    Node* operator[] (const int index) {
+        if (this->IsEmpty()) return nullptr;
+        Node* p = this->First;
+
+        for (int i = 0; i < index; i++) {
+            p = p->Next;
+        }
+
+        return p;
+    }
+
 private:
     void AddToEmpty(int num) {
         Node* p = new Node(num);
@@ -136,11 +147,5 @@ private:
 };
 
 int main() {
-    List l = List();
 
-    l.AddFirst(3);
-    l.AddLast(7);
-    l.AddLast(13);
-
-    l.RemoveByVal(13);
 }
