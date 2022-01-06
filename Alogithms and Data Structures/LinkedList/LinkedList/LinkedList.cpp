@@ -129,7 +129,7 @@ public:
             p = p->Next;
         }
 
-        return p;
+        return (p) ? p : nullptr;
     }
 
 private:
