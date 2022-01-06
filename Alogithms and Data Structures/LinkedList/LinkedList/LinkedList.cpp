@@ -97,6 +97,18 @@ public:
     }
 
     void RemoveByVal(int num) {
+        if (this->IsEmpty()) return;
+
+        if (this->First->Data == num) {
+            this->RemoveFirst();
+            return;
+        }
+
+        if (this->Last->Data == num) {
+            this->RemoveLast();
+            return;
+        }
+
         Node* p = this->First;
         Node* nextP = this->First->Next;
 
@@ -127,8 +139,8 @@ int main() {
     List l = List();
 
     l.AddFirst(3);
-    l.AddLast(13);
     l.AddLast(7);
+    l.AddLast(13);
 
     l.RemoveByVal(13);
 }
