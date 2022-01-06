@@ -82,6 +82,32 @@ public:
         }
     }
 
+    void RemoveLast() {
+        if (this->IsEmpty()) return;
+
+        if (this->First == this->Last) this->Clear();
+        else {
+            Node* p = this->First;
+            while (p->Next != this->Last) p = p->Next;
+
+            p->Next = 0;
+            delete this->Last;
+            this->Last = p;
+        }
+    }
+
+    void RemoveByVal(int num) {
+        Node* p = this->First;
+        Node* nextP = this->First->Next;
+
+        while (nextP->Data != num) {
+            p = p->Next;
+            nextP = nextP->Next;
+        }
+
+        p->Next = nextP->Next;
+        delete nextP;
+    }
 
 private:
     void AddToEmpty(int num) {
@@ -102,6 +128,7 @@ int main() {
 
     l.AddFirst(3);
     l.AddLast(13);
+    l.AddLast(7);
 
-    l.RemoveFirst();
+    l.RemoveByVal(13);
 }
