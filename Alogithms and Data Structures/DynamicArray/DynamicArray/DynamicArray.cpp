@@ -84,6 +84,20 @@ public:
 		return -1;
 	}
 
+	void RemoveAt(int index) {
+		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
+		T* tmp = new T[size - 1];
+
+		for (int i = 0, j = 0; i < size - 1; i++, j++) {
+			if (i == index) j++;
+			tmp[i] = storage[j];
+		}
+		size--;
+
+		delete[] storage;
+		storage = tmp;
+	}
+
 private:
 	int capacity;
 	int size = 0;
@@ -94,4 +108,17 @@ private:
 int main() {
 	DynamicArray<int>* da = new DynamicArray<int>(0);
 	
+	da->Push(5);
+	da->Push(12);
+	da->Push(17);
+	da->Push(14);
+	da->Push(23);
+	da->PrintAll();
+
+	da->RemoveAt(0);
+	da->RemoveAt(0);
+	da->RemoveAt(0);
+	da->RemoveAt(0);
+	da->RemoveAt(0);
+	da->PrintAll();
 }
