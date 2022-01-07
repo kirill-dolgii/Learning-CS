@@ -17,11 +17,11 @@ public:
 	int Size() { return capacity; };
 	bool IsEmpty() { return this->Size() == 0; };
 
-	T Get(int index) { 
+	T* Get(int index) { 
 		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
-		return storage[index]; 
+		return &storage[index]; 
 	}
-
+	
 	void Set(int index, T val) {
 		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
 		storage[index] = val; 
@@ -98,6 +98,26 @@ public:
 		storage = tmp;
 	}
 
+	bool Remove(T value) {
+		for (int i = 0; i < size; i++) {
+			if (storage[i] == value) { 
+				this->RemoveAt(i); 
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool Remove(T* value) {
+		for (int i = 0; i < size; i++) {
+			if (&storage[i] == value) {
+				this->RemoveAt(i);
+				return true;
+			}
+		}
+		return false;
+	}
+
 private:
 	int capacity;
 	int size = 0;
@@ -112,13 +132,13 @@ int main() {
 	da->Push(12);
 	da->Push(17);
 	da->Push(14);
+	da->Push(17);
+	da->Push(14);
 	da->Push(23);
 	da->PrintAll();
 
-	da->RemoveAt(0);
-	da->RemoveAt(0);
-	da->RemoveAt(0);
-	da->RemoveAt(0);
-	da->RemoveAt(0);
+	int* toDelete = da->Get(5);
+	*toDelete = 5;
+
 	da->PrintAll();
 }
