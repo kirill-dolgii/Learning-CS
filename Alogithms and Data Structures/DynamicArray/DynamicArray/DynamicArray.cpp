@@ -53,6 +53,22 @@ public:
 		return ret;
 	}
 
+	T Last() {
+		return storage[size - 1];
+	}
+
+	void InsertAt(int index, T value) {
+		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
+
+		if (size + 1 <= capacity) {
+			for (int i = size; i >= index; i--) {
+				storage[i + 1] = storage[i];
+			}
+		}
+		storage[index] = value;
+		size++;
+	}
+
 private:
 	int capacity;
 	int size = 0;
