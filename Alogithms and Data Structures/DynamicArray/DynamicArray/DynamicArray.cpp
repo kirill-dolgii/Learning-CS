@@ -26,6 +26,21 @@ public:
 		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
 		storage[index] = val; 
 	}
+	
+	void Resize() {
+		if (capacity == 0) {
+			capacity = 1;
+			return;
+		}
+
+		capacity *= 2;
+		T* tmp = new T[capacity];
+
+		copy(storage, storage + size, tmp);
+
+		delete[] storage;
+		this->storage = tmp;
+	}
 
 private:
 	int capacity;
