@@ -1,5 +1,4 @@
 ﻿#include <iostream>
-#include <vector>
 using namespace std;
 
 template <typename T>
@@ -7,36 +6,35 @@ class DynamicArray {
 
 public:
 	DynamicArray(int length) {
-		capacity =  length;
-		len = length;
-
-		vector<T> vec(length);
-		data = vec;
+		capacity = length;
+		storage = new T[length + 1];
 	};
 
-	int Size() { return len; };
+	~DynamicArray() {
+		delete[] this->storage;
+	};
+
+	int Size() { return capacity; };
 	bool IsEmpty() { return this->Size() == 0; };
 
-	T* Get(int index) { return &data[index]; };
-	void Set(int index, T value) { data[index] = value; };
+	T Get(int index) { 
+		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
+		return storage[index]; 
+	}
 
-	~DynamicArray();
+	void Set(int index, T val) {
+		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
+		storage[index] = val; 
+	}
 
 private:
-	vector<T> data;
-	int len;
 	int capacity;
+	int size = 0;
+	T* storage;
 };
 
 
 int main() {
-	//DynamicArray<int>* asd = new DynamicArray<int>(3);
-
-	//asd->Set(0, 3);
-	//asd->Set(1, 2);
-	//asd->Set(2, 1);
-
-	//int* c = asd->Get(0);
-	//*c = 5;
-	//cout << 3;
-} 
+	DynamicArray<int>* da = new DynamicArray<int>(0);
+	
+}
