@@ -69,6 +69,21 @@ public:
 		size++;
 	}
 
+	void PrintAll() {
+		cout << "[";
+		for (int i = 0; i < size; i++) {
+			cout << storage[i] << " ";
+		}
+		cout << "]" << " capacity = " << this->capacity << " current length = " << this->size << "\n";
+	}
+
+	int IndexOf(T value) {
+		for (int i = 0; i < size; i++) {
+			if (storage[i] == value) return i;
+		}
+		return -1;
+	}
+
 private:
 	int capacity;
 	int size = 0;
