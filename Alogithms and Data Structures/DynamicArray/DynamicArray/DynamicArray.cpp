@@ -42,6 +42,17 @@ public:
 		this->storage = tmp;
 	}
 
+	void Push(T value) {
+		if (size == capacity) this->Resize();
+		this->Set(size++, value);
+	}
+
+	T Pop() {
+		T ret = this->Get(size - 1);
+		size--;
+		return ret;
+	}
+
 private:
 	int capacity;
 	int size = 0;
