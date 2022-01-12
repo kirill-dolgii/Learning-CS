@@ -57,6 +57,22 @@ public:
 		return storage[size - 1];
 	}
 
+	T* Minimum() {
+		T* min = &storage[0];
+		for (int i = 0; i < size; i++) {
+			if (storage[i] < *min) min = &storage[i];
+		}
+		return min;
+	}
+
+	T* Maximum() {
+		T* max = &storage[0];
+		for (int i = 0; i < size; i++) {
+			if (storage[i] > *max) max = &storage[i];
+		}
+		return max;
+	}
+
 	void InsertAt(int index, T value) {
 		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
 
@@ -135,17 +151,18 @@ private:
 int main() {
 	DynamicArray<int>* da = new DynamicArray<int>(0);
 	
-	da->Push(5);
+	da->Push(0);
 	da->Push(12);
 	da->Push(17);
 	da->Push(14);
 	da->Push(17);
 	da->Push(14);
-	da->Push(23);
+	da->Push(100);
 	da->PrintAll();
 
 
-	da->Remove(da->Get(5));
-	da->PrintAll();
+	int* ptrMin = da->Minimum();
+	int* ptrMax = da->Maximum();
+	
 
 }
