@@ -77,9 +77,16 @@ public:
 		cout << "]" << " capacity = " << this->capacity << " current length = " << this->size << "\n";
 	}
 
-	int IndexOf(T value) {
+	int GetFirst(T value) {
 		for (int i = 0; i < size; i++) {
 			if (storage[i] == value) return i;
+		}
+		return -1;
+	}
+	
+	int IndexOf(T* ptr) {
+		for (int i = 0; i < size; i++) {
+			if ((storage + i) == ptr) return i;
 		}
 		return -1;
 	}
@@ -108,9 +115,9 @@ public:
 		return false;
 	}
 
-	bool Remove(T* value) {
+	bool Remove(T* ptr) {
 		for (int i = 0; i < size; i++) {
-			if (&storage[i] == value) {
+			if (&storage[i] == ptr) {
 				this->RemoveAt(i);
 				return true;
 			}
@@ -137,8 +144,8 @@ int main() {
 	da->Push(23);
 	da->PrintAll();
 
-	int* toDelete = da->Get(5);
-	*toDelete = 5;
 
+	da->Remove(da->Get(5));
 	da->PrintAll();
+
 }
