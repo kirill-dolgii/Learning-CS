@@ -1,17 +1,17 @@
 ﻿#include <iostream>
 
+template <typename T>
+class List {
 
-struct Node
-{
-public:
-    Node* Next;
-    int Data;
+    struct Node
+    {
+    public:
+        Node* Next;
+        T Data;
 
-    Node(int data) : Next(nullptr), Data(data) {}
-};
+        Node(T data) : Next(nullptr), Data(data) {}
+    };
 
-class List
-{
 public:
     Node* First;
     Node* Last;
@@ -30,11 +30,10 @@ public:
         return this->First == NULL;
     }
 
+    void AddFirst(T value) {
+        Node* p = new Node(value);
 
-    void AddFirst(int num) {
-        Node* p = new Node(num);
-
-        if (this->IsEmpty()) this->AddToEmpty(num);
+        if (this->IsEmpty()) this->AddToEmpty(value);
         else {
             Node* tmp = this->First;
 
@@ -43,30 +42,26 @@ public:
         }
     }
 
-    void AddLast(int num) {
-        if (this->IsEmpty()) this->AddToEmpty(num);
+    void Add(Node* node) {
+        if (this->IsEmpty()) this->AddToEmpty(node->Data);
         else {
-            Node* p = new Node(num);
-
-            this->Last->Next = p;
-            this->Last = p;
+            this->Last->Next = node;
+            this->Last = node;
         }
     }
 
-    void PrintAllList(Node* startNode) {
-        if (!this->IsEmpty()) {
-            std::cout << startNode->Data << "\n";
-            if (startNode->Next != 0) {
-                PrintAllList(startNode->Next);
-            }
+    void Push(T value) {
+        if (this->IsEmpty()) this->AddToEmpty(value);
+        else {
+            this->Add(new Node(value));
         }
     }
 
-    Node* FindByVal(int num) {
+    Node* FindByVal(T value) {
         if (!this->IsEmpty()) {
             Node* p = this->First;            
-            while (p && p->Data != num) p = p->Next;
-                return (p && p->Data == num) ? p : 0;            
+            while (p && p->Data != value) p = p->Next;
+                return (p && p->Data == value) ? p : 0;
         }
     }
 
@@ -82,7 +77,7 @@ public:
         }
     }
 
-    void RemoveLast() {
+    void Pop() {
         if (this->IsEmpty()) return;
 
         if (this->First == this->Last) this->Clear();
@@ -96,29 +91,41 @@ public:
         }
     }
 
-    void RemoveByVal(int num) {
+    void RemoveByVal(T value) {
         if (this->IsEmpty()) return;
 
-        if (this->First->Data == num) {
+        if (this->First->Data == value) {
             this->RemoveFirst();
             return;
         }
 
-        if (this->Last->Data == num) {
-            this->RemoveLast();
+        if (this->Last->Data == value) {
+            this->Pop();
             return;
         }
 
         Node* p = this->First;
         Node* nextP = this->First->Next;
 
-        while (nextP->Data != num) {
+        while (nextP->Data != value) {
             p = p->Next;
             nextP = nextP->Next;
         }
 
         p->Next = nextP->Next;
         delete nextP;
+    }
+
+    int IndexOf(Node* node) {
+        if (this->IsEmpty()) return -1;
+        Node* p = this->First;
+
+        for (int i = 0; p != node; i++) {
+            if (p == node) return i;
+            p = p->Next;
+        }
+        
+        return -1;
     }
 
     Node* operator[] (const int index) {
@@ -132,12 +139,25 @@ public:
         return (p) ? p : nullptr;
     }
 
+    void PrintAll() {
+        Node* p = this->First;
+            for (int i = 0; p != 0; i++) {
+                std::cout << "#" << i << "; Value:" << p->Data << std::endl;
+                p = p->Next;
+            }
+    }
+
 private:
-    void AddToEmpty(int num) {
-        Node* p = new Node(num);
+    void AddToEmpty(T value) {
+        Node* p = new Node(value);
 
         this->First = p;
         this->Last = p;
+    }
+
+    void AddToEmpty(Node* node) {
+        this->First = node;
+        this->Last = node;
     }
 
     void Clear() {
@@ -147,5 +167,12 @@ private:
 };
 
 int main() {
+    
+    List<char>* list = new List<char>();
 
+    list->Push('a');
+    list->Push('b');
+    list->Push('c');
+
+    list->PrintAll();
 }
