@@ -26,6 +26,13 @@ public:
         this->Last = 0;
     }
 
+    List(T value) {
+        Node* p = new Node(value);
+
+        this->First = p;
+        this->Last = p;
+    }
+
     bool IsEmpty() {
         return this->First == NULL;
     }
