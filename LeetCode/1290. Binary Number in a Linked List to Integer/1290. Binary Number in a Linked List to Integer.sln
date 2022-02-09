@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32106.194
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "1290. Binary Number in a Linked List to Integer", "1290. Binary Number in a Linked List to Integer\1290. Binary Number in a Linked List to Integer.csproj", "{7B4BD9DE-FCCB-4745-9AD8-B2A35DF00DD1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7B4BD9DE-FCCB-4745-9AD8-B2A35DF00DD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B4BD9DE-FCCB-4745-9AD8-B2A35DF00DD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B4BD9DE-FCCB-4745-9AD8-B2A35DF00DD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B4BD9DE-FCCB-4745-9AD8-B2A35DF00DD1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DB3F2B8C-3C84-488B-8B10-B972CB7D4385}
+	EndGlobalSection
+EndGlobal
