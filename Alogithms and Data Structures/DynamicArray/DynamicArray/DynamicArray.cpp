@@ -1,168 +1,150 @@
 ﻿#include <iostream>
+#include "DynamicArray.h"
+
 using namespace std;
 
 template <typename T>
-class DynamicArray {
+DynamicArray<T>::DynamicArray()
+{
+	this->size = 0;
+	this->capacity = this->init_capacity;
 
+	this->storage = new T[init_capacity];
+
+	if (this->storage == 0)
+		throw MEMFAIL;
+}
+
+template <typename T>
+DynamicArray<T>::DynamicArray(const DynamicArray &to_copy)
+{
+	this->storage = new T[to_copy.size];
+		
+	if (storage == 0)
+		throw MEMFAIL;
+
+	copy(to_copy.storage, to_copy.storage + to_copy.size, this->storage);
+
+	this->size = to_copy.size;
+	this->capacity = to_copy.capacity;
+}
+
+template <typename T>
+DynamicArray<T>::~DynamicArray()
+{
+	delete [] this->storage;
+	this->storage = 0;
+}
+
+template <typename T>
+DynamicArray<T>& DynamicArray<T>::operator=(const DynamicArray<T> &to_assign)
+{
+	this->storage = new T[to_assign.capacity];
+	
+	if (storage = 0)
+		throw MEMFAIL;
+		
+	copy(to_assign, to_assign + to_assign.size, this->storage);
+
+	this->size = to_assign.size;
+	this->capacity = to_assign.capacity;
+}
+
+template<class T>
+T& DynamicArray<T>::operator[] (unsigned int index)
+{
+	return this->storage + index;
+}
+
+template<class T>
+void DynamicArray<T>::Add(const T& value)
+{
+	size++;
+
+	if (this->size > this->capacity)
+		this->Resize();
+
+	this->storage[size - 1] = value;
+}
+
+template<class T>
+unsigned int DynamicArray<T>::GetSize() { return this->size; }
+
+template<class T>
+void DynamicArray<T>::SetSize(unsigned int new_size)
+{	
+	if (this->size < new_size && this->capacity < new_size)
+		this->Resize(new_size);
+}
+
+template<class T>
+void DynamicArray<T>::Clear()
+{
+	if (this->size != 0)
+	{
+		delete [] this->storage;
+		this->storage = new T[this->capacity];
+		this->size = 0;
+	}	
+}
+
+template<class T>
+void DynamicArray<T>::Delete(unsigned int pos)
+{
+	if (this->size == 1)
+		this->Clear();
+	else if (pos > this->size)
+		throw std::out_of_range("index is out of range");
+	else
+	{
+		for (int i = 0; i < this->size - 1; i++)
+			storage[i] = storage[i + 1];			
+		
+		size--;
+	}
+}
+
+template<class T>
+void* DynamicArray<T>::getptr()
+{
+	return this->storage;
+}
+
+template<class T>
+void DynamicArray<T>::Resize(unsigned int new_size)
+{	
+	unsigned int to_resize = new_size;
+
+	if (new_size == 0)
+		to_resize = this->size * this->scale_factor;
+
+	T* tmp_storage = new T[to_resize];
+	copy(this->storage, this->storage + this->size, tmp_storage);
+
+	delete[] this->storage;
+	this->storage = tmp_storage;
+
+	this->capacity = to_resize;
+}
+
+
+class asd
+{
 public:
-	DynamicArray(int length) {
-		capacity = length;
-		storage = new T[length + 1];
-	};
 
-	~DynamicArray() {
-		delete[] this->storage;
-	};
-
-	int Size() { return capacity; };
-	bool IsEmpty() { return this->Size() == 0; };
-
-	T* Get(int index) { 
-		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
-		return &storage[index]; 
-	}
-	
-	void Set(int index, T val) {
-		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
-		storage[index] = val; 
-	}
-	
-	void Resize() {
-		if (capacity == 0) {
-			capacity = 1;
-			return;
-		}
-
-		capacity *= 2;
-		T* tmp = new T[capacity];
-
-		copy(storage, storage + size, tmp);
-
-		delete[] storage;
-		this->storage = tmp;
-	}
-
-	void Push(T value) {
-		if (size == capacity) this->Resize();
-		this->Set(size++, value);
-	}
-
-	T Pop() {
-		T ret = this->Get(size - 1);
-		size--;
-		return ret;
-	}
-
-	T Last() {
-		return storage[size - 1];
-	}
-
-	T* Minimum() {
-		T* min = &storage[0];
-		for (int i = 0; i < size; i++) {
-			if (storage[i] < *min) min = &storage[i];
-		}
-		return min;
-	}
-
-	T* Maximum() {
-		T* max = &storage[0];
-		for (int i = 0; i < size; i++) {
-			if (storage[i] > *max) max = &storage[i];
-		}
-		return max;
-	}
-
-	void InsertAt(int index, T value) {
-		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
-
-		if (size + 1 <= capacity) {
-			for (int i = size; i >= index; i--) {
-				storage[i + 1] = storage[i];
-			}
-		}
-		storage[index] = value;
-		size++;
-	}
-
-	void PrintAll() {
-		cout << "[";
-		for (int i = 0; i < size; i++) {
-			cout << storage[i] << " ";
-		}
-		cout << "]" << " capacity = " << this->capacity << " current length = " << this->size << "\n";
-	}
-
-	int GetFirst(T value) {
-		for (int i = 0; i < size; i++) {
-			if (storage[i] == value) return i;
-		}
-		return -1;
-	}
-	
-	int IndexOf(T* ptr) {
-		for (int i = 0; i < size; i++) {
-			if ((storage + i) == ptr) return i;
-		}
-		return -1;
-	}
-
-	void RemoveAt(int index) {
-		if (index > this->size - 1 || index < 0) throw out_of_range("index is out of range");
-		T* tmp = new T[size - 1];
-
-		for (int i = 0, j = 0; i < size - 1; i++, j++) {
-			if (i == index) j++;
-			tmp[i] = storage[j];
-		}
-		size--;
-
-		delete[] storage;
-		storage = tmp;
-	}
-
-	bool Remove(T value) {
-		for (int i = 0; i < size; i++) {
-			if (storage[i] == value) { 
-				this->RemoveAt(i); 
-				return true;
-			}
-		}
-		return false;
-	}
-
-	bool Remove(T* ptr) {
-		for (int i = 0; i < size; i++) {
-			if (&storage[i] == ptr) {
-				this->RemoveAt(i);
-				return true;
-			}
-		}
-		return false;
-	}
-
-private:
-	int capacity;
-	int size = 0;
-	T* storage;
+	int val;
+	asd() {};
+	asd(int v) { val = v; }
 };
 
-
 int main() {
-	DynamicArray<int>* da = new DynamicArray<int>(0);
 	
-	da->Push(0);
-	da->Push(12);
-	da->Push(17);
-	da->Push(14);
-	da->Push(17);
-	da->Push(14);
-	da->Push(100);
-	da->PrintAll();
+	DynamicArray<asd>* da = new DynamicArray<asd>();
 
+	asd* arr = new asd[3];
 
-	int* ptrMin = da->Minimum();
-	int* ptrMax = da->Maximum();
-	
+	da->Add(*(new asd(3)));
+
+	void *ptr = da->getptr();
 
 }
