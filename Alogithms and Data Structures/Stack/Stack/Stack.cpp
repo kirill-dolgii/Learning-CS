@@ -1,6 +1,4 @@
-﻿
-
-#include <iostream>
+﻿#include <iostream>
 #include <stack>
 #include <vector>
 #include <iostream>
@@ -52,6 +50,65 @@ private:
     T min;
 };
 
+template <class T>
+class MyBadStack
+{
+public:
+    MyBadStack() {};
+
+    void Push(T value)
+    {
+        if ((!stack.empty() && value < stack.top().prevMin) || stack.empty())
+        {
+            this->stack.push(*(new Node <T>(value, value)));
+        }
+        else
+        {
+            stack.push(*(new Node <T>(value, stack.top().prevMin)));
+        }
+    }
+
+    T Pop()
+    {
+        Node <T> ret = stack.top();
+        stack.pop();
+        return ret.value;
+    }
+
+    T GetMin()
+    {
+        T ret = stack.top().prevMin;
+        return ret;
+    }
+
+private:  
+
+    template <class T>
+    struct Node
+    {
+    public:
+        Node(T value, T min)
+        {
+            this->value = value;
+            this->prevMin = min;
+        }
+
+        bool operator>(Node <T> other)
+        {
+            if (this->value > other->value)
+                return true;
+            else
+                return false;
+        }
+
+        T value;
+        T prevMin;
+    };
+
+    stack<Node<T>> stack;
+
+};
+
 int main()
 {
     MyStack<int> *st = new MyStack<int>;
@@ -70,4 +127,16 @@ int main()
         cout << cond;
     }   
     
+    MyBadStack <int> s;
+
+    s.Push(10);
+    s.Push(3);
+    s.Push(6);
+    s.GetMin();
+    s.Push(0);
+    s.GetMin();
+
+    s.Pop();
+    s.GetMin();
+
 }
