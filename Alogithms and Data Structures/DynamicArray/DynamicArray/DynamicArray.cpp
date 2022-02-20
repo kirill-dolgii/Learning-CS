@@ -84,8 +84,9 @@ void DynamicArray<T>::Clear()
 	{
 		delete [] this->storage;
 		this->storage = new T[this->capacity];
+
 		this->size = 0;
-	}	
+	}
 }
 
 template<class T>
@@ -101,7 +102,9 @@ void DynamicArray<T>::Delete(unsigned int pos)
 			storage[i] = storage[i + 1];			
 		
 		size--;
-	}
+		if (this->size < 0.25 * this->capacity)
+			this->Resize(capacity / 2);
+	}	
 }
 
 template<class T>
@@ -131,7 +134,6 @@ void DynamicArray<T>::Resize(unsigned int new_size)
 class asd
 {
 public:
-
 	int val;
 	asd() {};
 	asd(int v) { val = v; }
@@ -139,12 +141,16 @@ public:
 
 int main() {
 	
-	DynamicArray<asd>* da = new DynamicArray<asd>();
+	DynamicArray<int> *da = new DynamicArray<int>();
 
-	asd* arr = new asd[3];
+	da->Add(1);
+	da->Add(2);
+	da->Add(3);
+	da->Add(4);
 
-	da->Add(*(new asd(3)));
-
-	void *ptr = da->getptr();
+	da->Delete(da->GetSize() - 1);
+	da->Delete(da->GetSize() - 1);
+	da->Delete(da->GetSize() - 1);
+	da->Delete(da->GetSize() - 1);
 
 }
