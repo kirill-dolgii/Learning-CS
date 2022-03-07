@@ -23,8 +23,6 @@ namespace Heap
 
 		private const uint DEFAULT_CAPACITY = 10;
 
-		private IComparer<T> comparer;
-
 		bool IsMinHeap = true;
 
 		public MyHeap() : this(DEFAULT_CAPACITY) { }
