@@ -23,6 +23,17 @@ namespace Heap
 			container = new T[capacity];
 		}
 
+		public MyHeap(T[] data)
+		{
+			container = new T[data.Count()];
+			capacity = (uint)data.Count();
+
+			foreach (T item in data)
+			{
+				this.Insert(item);
+            }
+        }
+
 		public bool IsEmpty() => size == 0;
 
 		public void Clear() { this.container = new T[capacity < DEFAULT_CAPACITY ? DEFAULT_CAPACITY : capacity];}
@@ -119,7 +130,10 @@ namespace Heap
 			mh.Insert(24);
 			mh.Insert(1);
 
-			mh.Remove(7);
+			int[] d = new int[] { 0, 2, 3, 7, 19, 24, 1 };
+
+			var mh1 = new MyHeap<int>(d);
+
 		}
 	}
 }
