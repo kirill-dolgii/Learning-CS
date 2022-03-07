@@ -42,13 +42,10 @@ namespace Heap
 
 			container = new T[data.Count()];
 			capacity = (uint)data.Count();
-			size = (uint)data.Count();
 
 			foreach (T item in data)
-			{
 				this.Insert(item);
-            }
-        }
+		}
 
 		// O(n) heap constructor (bubble down all nodes from the half untill the beginning)
 		public MyHeap(ICollection<T> data, bool IsMinHeap = false)
@@ -58,9 +55,9 @@ namespace Heap
 			container = new T[data.Count()];
 			data.CopyTo(container, 0);
 			capacity = (uint)data.Count();
-			size = (uint)data.Count();
+            size = (uint)data.Count();
 
-			for (int i = ((int)size / 2) - 1; i >= 0; i--)
+            for (int i = ((int)size / 2) - 1; i >= 0; i--)
 				this.BubbleDown((uint)i);
         }
 
@@ -171,6 +168,27 @@ namespace Heap
 		}
 	}
 
+	namespace ArrayExtensions
+	{
+		using System;
+		
+		// O(n * log(n)) sorting algorithm (selection sort with heap data structure)
+		public static class ArrayExtensions<T>
+		{
+			public static IList<T> HeapSort<T>(T[] array)
+				where T : IComparable<T>
+			{
+				MyHeap<T> heap = new MyHeap<T>(array, true);
+
+				for (int i = 0; i < array.Count(); i++)
+				{
+					array[i] = heap.ExtractHead();
+                }
+				return array;
+            }
+		}
+    }
+
     internal class Program
 	{
 		private static void Main(string[] args)
@@ -195,6 +213,11 @@ namespace Heap
 			mh1.ExtractHead();
 			mh1.ExtractHead();
 			mh1.ExtractHead();
+
+
+			int[] arryToSort = new int[7] { 0, 2, 3, 7, 19, 24, 1 };
+
+			var sorted = ArrayExtensions.ArrayExtensions<int>.HeapSort<int>(arryToSort);
 
 		}
 	}
