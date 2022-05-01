@@ -94,39 +94,50 @@ namespace DataStructures
 
 		public void Clear()
 		{
-			throw new NotImplementedException();
+			Array.Clear(this._storage);
 		}
 
 		public bool Contains(T item)
 		{
-			throw new NotImplementedException();
+			if (this._size == 0) {throw new ArgumentException("Array is empty");}
+			return this._storage.Contains(item);
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			throw new NotImplementedException();
+			this._storage.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(T item)
 		{
-			throw new NotImplementedException();
+			if (!this.Contains(item)) return false;
+			for (var (i, j) = (0, 0); i < this._size; i++)
+				{
+					if (this._storage[i].Equals(item)) j++;
+					this._storage[i] = this._storage[j];
+				}
+			this._size--;
+			return true;		
 		}
 
-		public int  Count      { get; }
+		public int  Count      => this._storage.Length;
 		public bool IsReadOnly { get; }
 		public int IndexOf(T item)
 		{
-			throw new NotImplementedException();
+			for (int i = 0; i < this._size; i++) { if (this._storage[i].Equals(item)) return i; }	
+			return -1;
 		}
 
 		public void Insert(int index, T item)
-		{
-			throw new NotImplementedException();
+		{	
+			if ((index < 0) || (index >= this._size) || this._capacity < this._size + 1) throw new IndexOutOfRangeException();
+			for (int i = index; i < this._size; i++) this._storage[i + 1] = this._storage[i];
+			this._storage[index] = item;
 		}
 
 		public void RemoveAt(int index)
 		{
-			throw new NotImplementedException();
+			this._storage[index] = default(T);
 		}
 
 		public T this[int index]
