@@ -77,9 +77,19 @@ namespace DataStructures
 			return new Enumerator<T>(this);
 		}
 
+		private void Resize()
+		{
+			this._capacity *= 2;
+
+			T[] tmp = new T[this._capacity];
+			this._storage.CopyTo(tmp, 0);
+			this._storage = tmp;
+		}
+
 		public void Add(T item)
 		{
-			throw new NotImplementedException();
+			if (this._size == this._capacity) {this.Resize();}
+			this._storage[this._size++] = item;
 		}
 
 		public void Clear()
