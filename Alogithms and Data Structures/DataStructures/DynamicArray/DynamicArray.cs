@@ -14,40 +14,67 @@ namespace DataStructures
 
 		private const int DefaultCapacity = 8;
 
-		private int[] _storage;
+		private T[] _storage;
 
 		public DynamicArray()
 		{
-			int size;
 			this._size = 0;
 			this._capacity = DefaultCapacity;
-			this._storage = new int[this._capacity];
+			this._storage = new T[this._capacity];
 		}
 
 		public DynamicArray(int size)
 		{
 			this._size = size;
 			this._capacity = this._size > DefaultCapacity ? this._size : DefaultCapacity;
-			this._storage = new int[this._capacity];
+			this._storage = new T[this._capacity];
 		}
 
-		public DynamicArray(int[] data)
+		public DynamicArray(T[] data)
 		{
 			this._size = data.Length;
 			this._capacity = (int)Math.Pow(2, (int)Math.Ceiling(Math.Log2(this._size)));
 
-			this._storage = new int[this._capacity];
+			this._storage = new T[this._capacity];
 			data.CopyTo(this._storage, 0);
+		}
+
+		private class Enumerator<T> : IEnumerator<T>
+		{
+			public Enumerator(DynamicArray<T> array) {this._array = array;}
+
+			private readonly DynamicArray<T> _array;
+
+			public bool MoveNext()
+			{
+				return ++this._idx < _array._size;
+			}
+
+			public void Reset()
+			{
+				this._idx = -1;
+			}
+
+			private int _idx = -1;
+
+			public T Current => this._array[this._idx];
+
+			object IEnumerator.Current => this.Current;
+
+			public void Dispose()
+			{
+				//throw new NotImplementedException();
+			}
 		}
 
 		public IEnumerator<T> GetEnumerator()
 		{
-			throw new NotImplementedException();
+			return new Enumerator<T>(this);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return GetEnumerator();
+			return new Enumerator<T>(this);
 		}
 
 		public void Add(T item)
@@ -94,8 +121,16 @@ namespace DataStructures
 
 		public T this[int index]
 		{
-			get => throw new NotImplementedException();
-			set => throw new NotImplementedException();
+			get
+			{
+				if (index >= this._size || index < 0) throw new ArgumentOutOfRangeException(nameof(index));
+				return this._storage[index];
+			}
+			set
+			{
+				if (index >= this._size || index < 0) throw new ArgumentOutOfRangeException(nameof(index));
+				throw new NotImplementedException();
+			}
 		}
 	}
 }
