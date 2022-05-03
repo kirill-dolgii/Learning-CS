@@ -27,9 +27,15 @@ namespace DataStructures
 				this.Parent = null;
 			}
 
-			public TreeNode(T elem, TreeNode<T> parent) : this(elem)
+			public TreeNode(T elem, TreeNode<T>? parent) : this(elem)
 			{
 				this.Parent = parent;
+			}
+
+			public TreeNode(T elem, TreeNode<T>? parent, TreeNode<T>? left, TreeNode<T>? right) : this(elem, parent)
+			{
+				this.LeftLeaf = left;
+				this.RightLeaf = right;
 			}
 		}
 
@@ -97,9 +103,60 @@ namespace DataStructures
 			throw new NotImplementedException();
 		}
 
+		private TreeNode<T> Min(TreeNode<T> minRoot)
+		{
+			while (minRoot.LeftLeaf != null) minRoot = minRoot.LeftLeaf;
+			return minRoot;
+		}
+
+		private TreeNode<T> Remove(TreeNode<T> removeRoot, T item)
+		{
+			if (removeRoot == null) return null;
+			if (item.CompareTo(removeRoot.value) == 0)
+			{
+				if (removeRoot.LeftLeaf == null && removeRoot.RightLeaf == null) return null;
+				else if (removeRoot.LeftLeaf != null && removeRoot.RightLeaf != null)
+				{
+					TreeNode<T> min = new(this.Min(removeRoot.RightLeaf).value, removeRoot.Parent, 
+										  removeRoot.LeftLeaf, removeRoot.RightLeaf);
+
+					min.RightLeaf.Parent = min;
+					min.LeftLeaf.Parent = min;
+
+					this.Remove(removeRoot, min.value);
+					return min;
+				}
+				else if (removeRoot.LeftLeaf != null || removeRoot.RightLeaf != null)
+				{
+					var notNUllChild = removeRoot.LeftLeaf != null? removeRoot.LeftLeaf : removeRoot.RightLeaf;
+					notNUllChild.Parent = removeRoot.Parent;
+					return notNUllChild;
+				}
+			}
+
+			if (item.CompareTo(removeRoot.value) < 0)
+			{
+				removeRoot.LeftLeaf = this.Remove(removeRoot.LeftLeaf, item);
+				return removeRoot;
+			}
+
+			if (item.CompareTo(removeRoot.value) > 0)
+			{
+				removeRoot.RightLeaf = this.Remove(removeRoot.RightLeaf, item);
+				return removeRoot;
+			}
+
+            return new(item);
+        }
+
 		public bool Remove(T item)
 		{
-			throw new NotImplementedException();
+			if (!this.Contains(item)) return false;
+			else
+			{
+				this.Remove(this.Root, item);
+				return true;
+			}
 		}
 
 		public int  Count      { get; }
