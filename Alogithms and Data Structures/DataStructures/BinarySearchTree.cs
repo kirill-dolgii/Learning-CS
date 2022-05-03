@@ -52,28 +52,27 @@ namespace DataStructures
 
 		public void Add(T item)
 		{
-			TreeNode<T>? prev = this.Root;
-			TreeNode<T>? current = this.Root;
+			this.Add(this.Root, item);
+		}
 
-			while (current != null)
+		private TreeNode<T> Add(TreeNode<T>? addRoot, T item)
+		{
+			if (addRoot == null) addRoot = new (item, null, null, null);
+			else
 			{
-				prev = current;
-				if (item.CompareTo(current.value) < 0)
+				if (item.CompareTo(addRoot.value) < 0)
 				{
-					current = current.LeftLeaf;
-					continue;
+					addRoot.LeftLeaf = this.Add(addRoot.LeftLeaf, item);
+					addRoot.LeftLeaf.Parent = addRoot;
 				}
-				if (item.CompareTo(current.value) > 0)
+
+				if (item.CompareTo(addRoot.value) > 0)
 				{
-					current = current.RightLeaf;
-					continue;
+					addRoot.RightLeaf = this.Add(addRoot.RightLeaf, item);
+					addRoot.RightLeaf.Parent = addRoot;
 				}
 			}
-
-			current = new(item, prev);
-			if (item.CompareTo(prev.value) < 0) prev.LeftLeaf = current;
-			if (item.CompareTo(prev.value) > 0) prev.RightLeaf = current;
-
+			return addRoot;
 		}
 
 		public void Clear()
