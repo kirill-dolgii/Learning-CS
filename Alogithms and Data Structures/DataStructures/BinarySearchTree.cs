@@ -82,7 +82,14 @@ namespace DataStructures
 
 		public bool Contains(T item)
 		{
-			throw new NotImplementedException();
+			TreeNode<T> node = this.Root;
+			while (node != null)
+			{
+				if (item.CompareTo(node.value) < 0) node = node.LeftLeaf;
+				else if (item.CompareTo(node.value) > 0) node = node.RightLeaf;
+				else return true;
+			}
+			return false;
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
