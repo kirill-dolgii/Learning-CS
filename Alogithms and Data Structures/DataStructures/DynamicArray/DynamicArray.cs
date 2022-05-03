@@ -5,153 +5,177 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataStructures
+namespace DataStructures;
+
+public class DynamicArray<T> : IList<T>
 {
-    public class DynamicArray<T> : IList<T>
-    {
-		private int _size;
-		private int _capacity;
+	private int _size;
+	private int _capacity;
 
-		private const int DefaultCapacity = 8;
+	private const int DefaultCapacity = 8;
 
-		private T[] _storage;
+	private T[] _storage;
 
-		public DynamicArray()
+	public DynamicArray()
+	{
+		_size = 0;
+		_capacity = DefaultCapacity;
+		_storage = new T[_capacity];
+	}
+
+	public DynamicArray(int capacity)
+	{
+		if (capacity < 0) throw new ArgumentOutOfRangeException($"Illegal capacity {nameof(capacity)}");
+		_size = 0;
+		_capacity = _size > DefaultCapacity ? capacity : DefaultCapacity;
+		_storage = new T[_capacity];
+	}
+
+	public DynamicArray(T[] data)
+	{
+		_size = data.Length;
+		_capacity = (int)Math.Pow(2, (int)Math.Ceiling(Math.Log2(_size)));
+
+		_storage = new T[_capacity];
+		data.CopyTo(_storage, 0);
+	}
+
+	private class Enumerator<T> : IEnumerator<T>
+	{
+		public Enumerator(DynamicArray<T> array)
 		{
-			this._size = 0;
-			this._capacity = DefaultCapacity;
-			this._storage = new T[this._capacity];
+			_array = array;
 		}
 
-		public DynamicArray(int size)
+		private readonly DynamicArray<T> _array;
+
+		public bool MoveNext()
 		{
-			this._size = size;
-			this._capacity = this._size > DefaultCapacity ? this._size : DefaultCapacity;
-			this._storage = new T[this._capacity];
+			return ++_idx < _array._size;
 		}
 
-		public DynamicArray(T[] data)
+		public void Reset()
 		{
-			this._size = data.Length;
-			this._capacity = (int)Math.Pow(2, (int)Math.Ceiling(Math.Log2(this._size)));
-
-			this._storage = new T[this._capacity];
-			data.CopyTo(this._storage, 0);
+			_idx = -1;
 		}
 
-		private class Enumerator<T> : IEnumerator<T>
+		private int _idx = -1;
+
+		public T Current => _array[_idx];
+
+		object IEnumerator.Current => Current;
+
+		public void Dispose()
 		{
-			public Enumerator(DynamicArray<T> array) {this._array = array;}
-
-			private readonly DynamicArray<T> _array;
-
-			public bool MoveNext()
-			{
-				return ++this._idx < _array._size;
-			}
-
-			public void Reset()
-			{
-				this._idx = -1;
-			}
-
-			private int _idx = -1;
-
-			public T Current => this._array[this._idx];
-
-			object IEnumerator.Current => this.Current;
-
-			public void Dispose()
-			{
-				//throw new NotImplementedException();
-			}
+			//throw new NotImplementedException();
 		}
+	}
 
-		public IEnumerator<T> GetEnumerator()
+	public IEnumerator<T> GetEnumerator()
+	{
+		return new Enumerator<T>(this);
+	}
+
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		return new Enumerator<T>(this);
+	}
+
+	private void Resize()
+	{
+		if (this._size == this._capacity)
 		{
-			return new Enumerator<T>(this);
-		}
+			_capacity *= 2;
 
-		IEnumerator IEnumerable.GetEnumerator()
+			var tmp = new T[_capacity];
+			_storage.CopyTo(tmp, 0);
+			_storage = tmp;
+		}
+		else if (this._size <= 0.5 * this._capacity)
 		{
-			return new Enumerator<T>(this);
-		}
+			_capacity = (int)(_capacity / 1.5);
 
-		private void Resize()
+			var tmp = new T[_capacity];
+			for (int i = 0; i < this._size; i++) tmp[i] = this._storage[i];
+			_storage = tmp;
+		}
+	}
+
+	public void Add(T item)
+	{
+		if (_size == _capacity) Resize();
+		_storage[_size++] = item;
+	}
+
+	public void Clear()
+	{
+		Array.Clear(_storage);
+	}
+
+	public bool Contains(T item)
+	{
+		if (_size == 0) throw new ArgumentException("Array is empty");
+		return _storage.Contains(item);
+	}
+
+	public void CopyTo(T[] array, int arrayIndex)
+	{
+		_storage.CopyTo(array, arrayIndex);
+	}
+
+	public bool Remove(T item)
+	{
+		var index = IndexOf(item);
+		if (index == -1) return false;
+		else
 		{
-			this._capacity *= 2;
-
-			T[] tmp = new T[this._capacity];
-			this._storage.CopyTo(tmp, 0);
-			this._storage = tmp;
+			RemoveAt(index);
+			return true;
 		}
+	}
 
-		public void Add(T item)
+	public int  Count      => this._size;
+	public bool IsReadOnly { get ; }
+
+	public int IndexOf(T item)
+	{
+		for (var i = 0; i < _size; i++)
 		{
-			if (this._size == this._capacity) {this.Resize();}
-			this._storage[this._size++] = item;
+			if (ReferenceEquals(_storage[i], null)) continue;
+			if (_storage[i]!.Equals(item)) return i;
 		}
+		return -1;
+	}
 
-		public void Clear()
+	public void Insert(int index, T item)
+	{
+		if (index < 0 || index > this._capacity - 1) throw new IndexOutOfRangeException();
+		if (_capacity < _size + 1) Resize();
+		for (var i = _size - 1; i >= index; i--) _storage[i + 1] = _storage[i];
+		_storage[index] = item;
+		_size++;
+	}
+
+	public void RemoveAt(int index)
+	{
+		if (index >= _size || index < 0) throw new IndexOutOfRangeException("Index is out of bounds");
+		for (var i = index; i < _size - 1; i++) _storage[i] = _storage[i + 1];
+		_storage[_size - 1] = default;
+		_size--;
+		this.Resize();
+	}
+
+	public T this[int index]
+	{
+		get
 		{
-			Array.Clear(this._storage);
+			if (index >= _size || index < 0) throw new IndexOutOfRangeException(nameof(index));
+			return _storage[index];
 		}
-
-		public bool Contains(T item)
+		set
 		{
-			if (this._size == 0) {throw new ArgumentException("Array is empty");}
-			return this._storage.Contains(item);
-		}
-
-		public void CopyTo(T[] array, int arrayIndex)
-		{
-			this._storage.CopyTo(array, arrayIndex);
-		}
-
-		public bool Remove(T item)
-		{
-			if (!this.Contains(item)) return false;
-			for (var (i, j) = (0, 0); i < this._size; i++)
-				{
-					if (this._storage[i].Equals(item)) j++;
-					this._storage[i] = this._storage[j];
-				}
-			this._size--;
-			return true;		
-		}
-
-		public int  Count      => this._storage.Length;
-		public bool IsReadOnly { get; }
-		public int IndexOf(T item)
-		{
-			for (int i = 0; i < this._size; i++) { if (this._storage[i].Equals(item)) return i; }	
-			return -1;
-		}
-
-		public void Insert(int index, T item)
-		{	
-			if ((index < 0) || (index >= this._size) || this._capacity < this._size + 1) throw new IndexOutOfRangeException();
-			for (int i = index; i < this._size; i++) this._storage[i + 1] = this._storage[i];
-			this._storage[index] = item;
-		}
-
-		public void RemoveAt(int index)
-		{
-			this._storage[index] = default(T);
-		}
-
-		public T this[int index]
-		{
-			get
-			{
-				if (index >= this._size || index < 0) throw new ArgumentOutOfRangeException(nameof(index));
-				return this._storage[index];
-			}
-			set
-			{
-				if (index >= this._size || index < 0) throw new ArgumentOutOfRangeException(nameof(index));
-				throw new NotImplementedException();
-			}
+			if (index >= _size || index < 0) throw new IndexOutOfRangeException(nameof(index));
+			_storage[index] = value;
 		}
 	}
 }
