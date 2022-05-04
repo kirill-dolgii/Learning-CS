@@ -31,71 +31,66 @@ namespace DataStructures
             }
         }
 
+        public TreeNode<T>? Root;
 
-		public TreeNode<T>? Root;
+        public BinarySearchTree(T firstElem)
+        {
+            this.Root = new TreeNode<T>(firstElem);
+            this._size = 0;
+        }
 
-		public BinarySearchTree(T firstElem)
-		{
-			this.Root = new TreeNode<T>(firstElem);
-		}
-		
-		public IEnumerator<T> GetEnumerator()
-		{
-			throw new NotImplementedException();
-		}
         private int _size;
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+        public IEnumerator<T> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
 
-		public void Add(T item)
-		{
-			this.Add(this.Root, item);
-		}
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
-		private TreeNode<T> Add(TreeNode<T>? addRoot, T item)
+        public void Add(T item)
 		{
-			if (addRoot == null) addRoot = new (item, null, null, null);
-			else
-			{
-				if (item.CompareTo(addRoot.value) < 0)
-				{
-					addRoot.LeftLeaf = this.Add(addRoot.LeftLeaf, item);
-					addRoot.LeftLeaf.Parent = addRoot;
-				}
+			if (this.Contains(item)) return;
+            this.Add(this.Root, item);
+            this._size++;
+        }
 
-				if (item.CompareTo(addRoot.value) > 0)
-				{
-					addRoot.RightLeaf = this.Add(addRoot.RightLeaf, item);
-					addRoot.RightLeaf.Parent = addRoot;
-				}
-			}
+        private TreeNode<T> Add(TreeNode<T>? addRoot, T item)
+        {
+            if (addRoot == null) addRoot = new(item);
+            else
+            {
+                int cmp = item.CompareTo(addRoot.Value);
+                if (cmp < 0) addRoot.LeftLeaf = this.Add(addRoot.LeftLeaf, item);
+                if (cmp > 0) addRoot.RightLeaf = this.Add(addRoot.RightLeaf, item);
+            }
 			return addRoot;
-		}
+        }
+        public void Clear()
+        {
+            throw new NotImplementedException();
+        }
 
-		public void Clear()
-		{
-			throw new NotImplementedException();
-		}
+        public bool Contains(T item)
+        {
+            TreeNode<T>? node = this.Root;
+            while (node != null)
+            {
+                int cmp = item.CompareTo(node.Value);
+                if (cmp < 0) node = node.LeftLeaf;
+                else if (cmp > 0) node = node.RightLeaf;
+                else return true;
+            }
+            return false;
+        }
 
-		public bool Contains(T item)
-		{
-			TreeNode<T> node = this.Root;
-			while (node != null)
-			{
-				if (item.CompareTo(node.value) < 0) node = node.LeftLeaf;
-				else if (item.CompareTo(node.value) > 0) node = node.RightLeaf;
-				else return true;
-			}
-			return false;
-		}
-
-		public void CopyTo(T[] array, int arrayIndex)
-		{
-			throw new NotImplementedException();
-		}
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
 
         private TreeNode<T> Min(TreeNode<T> minRoot)
         {
