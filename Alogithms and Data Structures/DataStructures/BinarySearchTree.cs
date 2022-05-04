@@ -10,34 +10,27 @@ namespace DataStructures
     public class BinarySearchTree<T> : ICollection<T>
     where T : IComparable<T>
     {
-		public class TreeNode<T> where T : IComparable<T>
-		{
-			public TreeNode<T>? LeftLeaf;
-			public TreeNode<T>? RightLeaf;
+        public class TreeNode<T> where T : IComparable<T>
+        {
+            public TreeNode<T>? LeftLeaf;
+            public TreeNode<T>? RightLeaf;
 
-			public TreeNode<T>? Parent;
+            public readonly T Value;
 
-			public T value;
+            public TreeNode(T elem)
+            {
+                this.Value = elem;
+                this.LeftLeaf = null;
+                this.RightLeaf = null;
+            }
 
-			public TreeNode(T elem)
-			{
-				this.value = elem;
-				this.LeftLeaf = null;
-				this.RightLeaf = null;
-				this.Parent = null;
-			}
+            public TreeNode(T elem, TreeNode<T>? left, TreeNode<T>? right) : this(elem)
+            {
+                this.LeftLeaf = left;
+                this.RightLeaf = right;
+            }
+        }
 
-			public TreeNode(T elem, TreeNode<T>? parent) : this(elem)
-			{
-				this.Parent = parent;
-			}
-
-			public TreeNode(T elem, TreeNode<T>? parent, TreeNode<T>? left, TreeNode<T>? right) : this(elem, parent)
-			{
-				this.LeftLeaf = left;
-				this.RightLeaf = right;
-			}
-		}
 
 		public TreeNode<T>? Root;
 
@@ -50,6 +43,7 @@ namespace DataStructures
 		{
 			throw new NotImplementedException();
 		}
+        private int _size;
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
@@ -103,63 +97,48 @@ namespace DataStructures
 			throw new NotImplementedException();
 		}
 
-		private TreeNode<T> Min(TreeNode<T> minRoot)
-		{
-			while (minRoot.LeftLeaf != null) minRoot = minRoot.LeftLeaf;
-			return minRoot;
-		}
-
-		private TreeNode<T> Remove(TreeNode<T> removeRoot, T item)
-		{
-			if (removeRoot == null) return null;
-			if (item.CompareTo(removeRoot.value) == 0)
-			{
-				if (removeRoot.LeftLeaf == null && removeRoot.RightLeaf == null) return null;
-				else if (removeRoot.LeftLeaf != null && removeRoot.RightLeaf != null)
-				{
-					TreeNode<T> min = new(this.Min(removeRoot.RightLeaf).value, removeRoot.Parent, 
-										  removeRoot.LeftLeaf, removeRoot.RightLeaf);
-
-					min.RightLeaf.Parent = min;
-					min.LeftLeaf.Parent = min;
-
-					this.Remove(removeRoot, min.value);
-					return min;
-				}
-				else if (removeRoot.LeftLeaf != null || removeRoot.RightLeaf != null)
-				{
-					var notNUllChild = removeRoot.LeftLeaf != null? removeRoot.LeftLeaf : removeRoot.RightLeaf;
-					notNUllChild.Parent = removeRoot.Parent;
-					return notNUllChild;
-				}
-			}
-
-			if (item.CompareTo(removeRoot.value) < 0)
-			{
-				removeRoot.LeftLeaf = this.Remove(removeRoot.LeftLeaf, item);
-				return removeRoot;
-			}
-
-			if (item.CompareTo(removeRoot.value) > 0)
-			{
-				removeRoot.RightLeaf = this.Remove(removeRoot.RightLeaf, item);
-				return removeRoot;
-			}
-
-            return new(item);
+        private TreeNode<T> Min(TreeNode<T> minRoot)
+        {
+            while (minRoot.LeftLeaf != null) minRoot = minRoot.LeftLeaf;
+            return minRoot;
         }
 
-		public bool Remove(T item)
-		{
-			if (!this.Contains(item)) return false;
-			else
-			{
-				this.Remove(this.Root, item);
-				return true;
-			}
-		}
+        private TreeNode<T>? Remove(TreeNode<T>? removeRoot, T item)
+        {
+            if (removeRoot == null) return null;
 
-		public int  Count      { get; }
-		public bool IsReadOnly { get; }
-	}
+            int cmp = item.CompareTo(removeRoot.Value);
+
+            if (cmp == 1) removeRoot.RightLeaf = this.Remove(removeRoot.RightLeaf, item);
+            else if (cmp == -1) removeRoot.LeftLeaf = this.Remove(removeRoot.LeftLeaf, item);
+            else
+            {
+				if (removeRoot.LeftLeaf == null && removeRoot.RightLeaf == null) return null;
+                //there are 2 leafs
+                if (removeRoot.RightLeaf != null && removeRoot.LeftLeaf != null)
+                {
+                    //find min, replace root with the min and remove min
+                    TreeNode<T> rightMin = this.Min(removeRoot.RightLeaf);
+
+                    rightMin.RightLeaf = this.Remove(removeRoot.RightLeaf, rightMin.Value);
+                    rightMin.LeftLeaf = removeRoot.LeftLeaf;
+                    return rightMin;
+                }
+                return removeRoot.LeftLeaf ?? removeRoot.RightLeaf;
+            }
+            return removeRoot;
+        }
+
+        public bool Remove(T item)
+        {
+            if (!this.Contains(item)) return false;
+
+            this.Root = this.Remove(this.Root, item);
+            this._size--;
+            return true;
+        }
+
+        public int Count => this._size;
+        public bool IsReadOnly => false;
+    }
 }
