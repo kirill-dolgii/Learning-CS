@@ -125,37 +125,48 @@ namespace DataStructures
 
         public int Count => this._size;
         public bool IsReadOnly => false;
-        
+
 
         public enum Traversal
         {
             InOrder,
-            PostOrder
+            PreOrder
         }
 
         private Traversal _traversal = Traversal.InOrder;
 
-		public IEnumerator<T> GetEnumerator() => GetEnumerator(this._traversal);
+        public IEnumerator<T> GetEnumerator() => GetEnumerator(this._traversal);
 
-		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator(this._traversal);
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator(this._traversal);
 
-        private IEnumerator<T> GetEnumerator(Traversal travType)
-		{
-			IEnumerator<T> ret = new InOrderIterator(this);
-			return ret;
-		}
-        
-        private class InOrderIterator : IEnumerator<T>
-		{
-			public InOrderIterator(BinarySearchTree<T> bst)
+        public IEnumerator<T> GetEnumerator(Traversal travType)
+        {
+            switch (travType)
 			{
-				if (bst.Root != null)
+				case Traversal.InOrder:
 				{
-                    this._bst = bst;
-                    this._trav = this._bst.Root;
-					this._stack.Push(bst.Root);
+                    return new InOrderIterator(this);
+				}
+                case Traversal.PreOrder:
+				{
+					return new PreOrderIterator(this);
 				}
 			}
+
+			return new InOrderIterator(this);
+		}
+
+        private class InOrderIterator : IEnumerator<T>
+        {
+            public InOrderIterator(BinarySearchTree<T> bst)
+            {
+                if (bst.Root != null)
+                {
+                    this._bst = bst;
+                    this._trav = bst.Root;
+                    this._stack.Push(bst.Root);
+                }
+            }
 
             private readonly BinarySearchTree<T> _bst;
 
@@ -195,11 +206,58 @@ namespace DataStructures
             public T Current => _visited.Value;
 
             object IEnumerator.Current => Current;
-            
-			public void Dispose()
+
+            public void Dispose()
             {
                 /*throw new NotImplementedException();*/
             }
         }
+
+        private class PreOrderIterator : IEnumerator<T>
+        {
+            public PreOrderIterator(BinarySearchTree<T> bst)
+            {
+                if (bst.Root != null)
+                {
+                    this._bst = bst;
+                    this._stack.Push(bst.Root);
+                }
+            }
+
+            private readonly BinarySearchTree<T> _bst;
+            
+            private Stack<TreeNode<T>> _stack = new();
+
+            private TreeNode<T> _current;
+
+            public T Current => this._current.Value;
+
+            object IEnumerator.Current => throw new NotImplementedException();
+
+            public void Dispose()
+            {
+                //throw new NotImplementedException();
+            }
+
+            public bool MoveNext()
+			{
+                if (this._stack.Count == 0) return false;
+                this._current = this._stack.Pop();
+				if (_current.RightLeaf != null) this._stack.Push(_current.RightLeaf);
+				if (_current.LeftLeaf != null) this._stack.Push(_current.LeftLeaf);
+				return true;
+			}
+
+            public void Reset()
+            {
+				if (this._bst.Root != null)
+				{
+					this._stack.Clear();
+					this._stack.Push(this._bst.Root);
+                }
+			}
+        }
+
+
     }
 }
