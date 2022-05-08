@@ -41,19 +41,9 @@ namespace DataStructures
 
         private int _size;
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
         public void Add(T item)
-		{
-			if (this.Contains(item)) return;
+        {
+            if (this.Contains(item)) return;
             this.Add(this.Root, item);
             this._size++;
         }
@@ -135,5 +125,81 @@ namespace DataStructures
 
         public int Count => this._size;
         public bool IsReadOnly => false;
+        
+
+        public enum Traversal
+        {
+            InOrder,
+            PostOrder
+        }
+
+        private Traversal _traversal = Traversal.InOrder;
+
+		public IEnumerator<T> GetEnumerator() => GetEnumerator(this._traversal);
+
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator(this._traversal);
+
+        private IEnumerator<T> GetEnumerator(Traversal travType)
+		{
+			IEnumerator<T> ret = new InOrderIterator(this);
+			return ret;
+		}
+        
+        private class InOrderIterator : IEnumerator<T>
+		{
+			public InOrderIterator(BinarySearchTree<T> bst)
+			{
+				if (bst.Root != null)
+				{
+                    this._bst = bst;
+                    this._trav = this._bst.Root;
+					this._stack.Push(bst.Root);
+				}
+			}
+
+            private readonly BinarySearchTree<T> _bst;
+
+            private readonly Stack<TreeNode<T>> _stack = new();
+
+            private TreeNode<T> _trav;
+            private TreeNode<T> _visited;
+
+            public bool MoveNext()
+            {
+                if (this._stack.Count == 0) return false;
+
+                while (this._trav.LeftLeaf != null)
+                {
+                    this._stack.Push(this._trav.LeftLeaf);
+                    this._trav = this._trav.LeftLeaf;
+                }
+
+                this._visited = this._stack.Pop();
+
+                if (_visited.RightLeaf != null)
+                {
+                    this._stack.Push(_visited.RightLeaf);
+                    this._trav = _visited.RightLeaf;
+                }
+
+                return true;
+            }
+            public void Reset()
+            {
+                if (this._bst.Root != null)
+                {
+                    this._trav = this._bst.Root;
+                    this._stack.Push(this._bst.Root);
+                }
+            }
+            public T Current => _visited.Value;
+
+            object IEnumerator.Current => Current;
+            
+			public void Dispose()
+            {
+                /*throw new NotImplementedException();*/
+            }
+        }
     }
 }
