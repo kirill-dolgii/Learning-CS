@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataStructures;
+namespace DataStructures.BinarySearchTree;
 
 public class BinarySearchTree<T> : ICollection<T>
 	where T : IComparable<T>
@@ -37,6 +37,17 @@ public class BinarySearchTree<T> : ICollection<T>
 	{
 		Root = new TreeNode<T>(firstElem);
 		_size = 0;
+	}
+
+	public BinarySearchTree(T[] arry)
+	{
+		if (arry == null) throw new ArgumentNullException(nameof(arry));
+		if (arry.Length == 0) throw new ArgumentException(nameof(arry));
+
+		this.Root = new TreeNode<T>(arry[0]);
+		this._size = 1;
+
+		foreach(T elem in arry.Skip(1).ToList()) this.Add(elem);
 	}
 
 	private int _size;
@@ -94,6 +105,16 @@ public class BinarySearchTree<T> : ICollection<T>
 		return minRoot;
 	}
 
+	public T Min() => this.Min(this.Root).Value;
+
+	private TreeNode<T> Max(TreeNode<T> maxRoot)
+	{
+		while (maxRoot.RightLeaf != null) maxRoot = maxRoot.RightLeaf;
+		return maxRoot;
+	}
+
+	public T Max() => this.Max(this.Root).Value;
+
 	private TreeNode<T>? Remove(TreeNode<T>? removeRoot, T item)
 	{
 		if (removeRoot == null) return null;
@@ -140,14 +161,6 @@ public class BinarySearchTree<T> : ICollection<T>
 	public int  Count      => _size;
 	public bool IsReadOnly => false;
 
-
-	public enum Traversal
-	{
-		InOrder,
-		PreOrder,
-		LevelOrder,
-		PostOrder
-	}
 
 	public IEnumerator<T> GetEnumerator()
 	{
