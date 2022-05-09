@@ -130,7 +130,8 @@ namespace DataStructures
         public enum Traversal
         {
             InOrder,
-            PreOrder
+            PreOrder,
+            LevelOrder
         }
 
         private Traversal _traversal = Traversal.InOrder;
@@ -150,6 +151,10 @@ namespace DataStructures
                 case Traversal.PreOrder:
 				{
 					return new PreOrderIterator(this);
+				}
+				case Traversal.LevelOrder:
+				{
+                    return new LevelOrderIterator(this);
 				}
 			}
 
@@ -220,6 +225,7 @@ namespace DataStructures
                 if (bst.Root != null)
                 {
                     this._bst = bst;
+					this._current = bst.Root;
                     this._stack.Push(bst.Root);
                 }
             }
@@ -257,7 +263,55 @@ namespace DataStructures
                 }
 			}
         }
+        
+		private class LevelOrderIterator : IEnumerator<T>
+		{
+			public LevelOrderIterator(BinarySearchTree<T> bst)
+			{
+				if (bst.Root != null)
+				{
+					this.bst = bst;
+					this._current = new(bst.Root.Value, bst.Root.LeftLeaf, bst.Root.RightLeaf);
+                    this._queue.Enqueue(bst.Root);
+				}
+			}
 
+            private BinarySearchTree<T> bst;
+
+            private Queue<TreeNode<T>> _queue = new();
+
+            private TreeNode<T> _current;
+
+            public bool MoveNext()
+			{
+                if (this._queue.Count == 0) return false;
+
+                this._current = this._queue.Dequeue();
+
+				if (this._current.LeftLeaf != null) this._queue.Enqueue(this._current.LeftLeaf);
+				if (this._current.RightLeaf != null) this._queue.Enqueue(this._current.RightLeaf);
+
+				return true;
+			}
+
+			public void Reset()
+			{
+				if (this.bst.Root != null)
+				{
+					this._queue.Clear();
+					this._queue.Enqueue(this.bst.Root);
+				}
+			}
+
+			public T Current => this._current.Value;
+
+			object IEnumerator.Current => throw new NotImplementedException();
+
+			public void Dispose()
+			{
+				//throw new NotImplementedException();
+			}
+		}
 
     }
 }
