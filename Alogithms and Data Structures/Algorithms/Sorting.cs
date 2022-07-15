@@ -10,13 +10,11 @@ public static class Sorting
 	/// </summary>
 	/// <param name="data">Input data.</param>
 	/// <param name="ascending">Specify sorting order.</param>
-	public static IEnumerable<T> HeapSort<T>(IEnumerable<T> data, bool ascending = false)
+	public static IEnumerable<T> HeapSort<T>(IEnumerable<T> data, bool ascending = true)
 	where T : IComparable<T>
 	{
 		var          heap   = new Heap<T>(data, ascending);
 		foreach (T val in data) yield return heap.ExtractHead();
 	}
-
-
 
 }

@@ -10,7 +10,7 @@ namespace DataStructures;
 public class Heap<T>
 	where T : IComparable<T>
 {
-	private T[]  _container;
+	private T[] _container;
 	private uint _capacity;
 
 	private uint _size = 0;
@@ -42,14 +42,26 @@ public class Heap<T>
 	}
 
 	// O(n) heap constructor (bubble down all nodes from the half untill the beginning)
-	public Heap(ICollection<T> data, bool isMinHeap = false)
+	public Heap(IEnumerable<T> data, bool isMinHeap = false)
 	{
-		this._isMinHeap = isMinHeap;
+		if (data == null) throw new ArgumentNullException(nameof(data));
 
-		_container = new T[data.Count()];
-		data.CopyTo(_container, 0);
-		_capacity = (uint)data.Count();
-		_size = (uint)data.Count();
+		this._isMinHeap = isMinHeap;
+		var size = data.Count();
+
+		_container = new T[size];
+
+		var enumerator = data.GetEnumerator();
+		for (int i = 0; i < size; i++)
+		{
+			enumerator.MoveNext();
+			_container[i] = enumerator.Current;
+		}
+
+		enumerator.Dispose();
+
+		_capacity = (uint)size;
+		_size = (uint)size;
 
 		for (var i = (int)_size / 2 - 1; i >= 0; i--)
 			BubbleDown((uint)i);
@@ -96,11 +108,11 @@ public class Heap<T>
 		var elemPos = -1;
 
 		foreach (var item in _container)
-			{
-				elemPos++;
-				if (item.CompareTo(elem) == 0)
-					break;
-			}
+		{
+			elemPos++;
+			if (item.CompareTo(elem) == 0)
+				break;
+		}
 
 		if (elemPos >= _size - 1)
 			return false;
@@ -132,10 +144,10 @@ public class Heap<T>
 			if (Compare(_container[minIdx], _container[index * 2 + i]))
 				minIdx = (uint)(index * 2 + i);
 		if (minIdx != index)
-			{
-				Swap(index, minIdx);
-				BubbleDown(minIdx);
-			}
+		{
+			Swap(index, minIdx);
+			BubbleDown(minIdx);
+		}
 	}
 
 	private void BubbleUp(uint index)
@@ -146,10 +158,10 @@ public class Heap<T>
 		var parent = (index - 1) / 2;
 
 		if (Compare(_container[parent], _container[index]))
-			{
-				Swap(index, parent);
-				BubbleUp(parent);
-			}
+		{
+			Swap(index, parent);
+			BubbleUp(parent);
+		}
 	}
 
 	private void Swap(uint item1, uint item2)
