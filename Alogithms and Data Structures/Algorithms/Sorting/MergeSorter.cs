@@ -4,8 +4,6 @@
 public class MergeSorter<T> : ISorter<T>
 where T : IComparable<T>
 {
-	public MergeSorter(IComparer<T>? comparer = null) {this._comparer = comparer;}
-	
 	public void Sort(T[] data, SortingOrder order = SortingOrder.Ascending)
 	{
         T[] tmpArry = new T[data.Length];
@@ -58,6 +56,7 @@ where T : IComparable<T>
 
 	public void Sort(T[] data, IComparer<T> comparer, SortingOrder order = SortingOrder.Ascending)
 	{
+		this._comparer = comparer;
 		this.Sort(data, order);
 	}
 }
