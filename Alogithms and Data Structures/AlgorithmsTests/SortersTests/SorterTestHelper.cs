@@ -33,11 +33,10 @@ where T : IComparable<T>
 		var testEnumerator   = this.Input.GetEnumerator();
 		var sortedEnumerator = this.ExpectedOutput.GetEnumerator();
 
-		for (int i = 0; i < this.Input.Length; i++)
+		while (testEnumerator.MoveNext() && sortedEnumerator.MoveNext())
 		{
-			testEnumerator.MoveNext();
-			sortedEnumerator.MoveNext();
-			Assert.AreEqual(sortedEnumerator.Current, testEnumerator.Current);
+			T curSorted = (T)sortedEnumerator.Current;
+			Assert.AreEqual(0, (curSorted.CompareTo((T)testEnumerator.Current)));
 		}
 	}
 
@@ -49,11 +48,10 @@ where T : IComparable<T>
 		var testEnumerator   = this.Input.GetEnumerator();
 		var sortedEnumerator = this.ExpectedOutput.Reverse().GetEnumerator();
 
-		for (int i = 0; i < this.Input.Length; i++)
+		while (testEnumerator.MoveNext() && sortedEnumerator.MoveNext())
 		{
-			testEnumerator.MoveNext();
-			sortedEnumerator.MoveNext();
-			Assert.AreEqual(sortedEnumerator.Current, testEnumerator.Current);
+			T curSorted = (T)sortedEnumerator.Current;
+			Assert.AreEqual(0, (curSorted.CompareTo((T)testEnumerator.Current)));
 		}
 
 		sortedEnumerator.Dispose();
@@ -69,12 +67,12 @@ where T : IComparable<T>
 		var testEnumerator   = this.Input.GetEnumerator();
 		var sortedEnumerator = this.ExpectedOutput.GetEnumerator();
 
-		for (int i = 0; i < this.Input.Length; i++)
+		while (testEnumerator.MoveNext() && sortedEnumerator.MoveNext())
 		{
-			testEnumerator.MoveNext();
-			sortedEnumerator.MoveNext();
-			Assert.AreEqual(sortedEnumerator.Current, testEnumerator.Current);
+			T curSorted = (T)sortedEnumerator.Current;
+			Assert.AreEqual(0, Comparer.Compare((T)sortedEnumerator.Current, (T)testEnumerator.Current));
 		}
+
 	}
 
 	[TestMethod]
@@ -85,11 +83,10 @@ where T : IComparable<T>
 		var testEnumerator   = this.Input.GetEnumerator();
 		var sortedEnumerator = this.ExpectedOutput.Reverse().GetEnumerator();
 
-		for (int i = 0; i < this.Input.Length; i++)
+		while (testEnumerator.MoveNext() && sortedEnumerator.MoveNext())
 		{
-			testEnumerator.MoveNext();
-			sortedEnumerator.MoveNext();
-			Assert.AreEqual(sortedEnumerator.Current, testEnumerator.Current);
+			T curSorted = (T)sortedEnumerator.Current;
+			Assert.AreEqual(0, Comparer.Compare((T)sortedEnumerator.Current, (T)testEnumerator.Current));
 		}
 
 		sortedEnumerator.Dispose();
