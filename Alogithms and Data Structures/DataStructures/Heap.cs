@@ -17,7 +17,9 @@ public class Heap<T>
 
 	private const uint DefaultCapacity = 10;
 
-	private readonly bool _isMinHeap = true;
+	private readonly bool _isMinHeap;
+
+	public readonly IComparer<T>? Comparer = null;
 
 	public Heap() : this(DefaultCapacity) { }
 
@@ -29,14 +31,17 @@ public class Heap<T>
 		_container = new T[capacity];
 	}
 
-	// O(n * logN) heap constructor
+	/// <summary>
+	/// O(n * logN) heap constructor.
+	/// </summary>
+	/// <param name="data">Initial sequence to construct a heap of.</param>
+	/// <param name="isMinHeap">Specify the priority of a heap. Min heap means that small items have higher priority</param>
 	public Heap(T[] data, bool isMinHeap)
 	{
 		this._isMinHeap = isMinHeap;
 
-		_container = new T[data.Count()];
-		_capacity = (uint)data.Count();
-		_size = (uint)data.Count();
+		_container = new T[data.Length];
+		_capacity = (uint)data.Length;
 
 		foreach (var item in data) Insert(item);
 	}
@@ -66,6 +71,8 @@ public class Heap<T>
 		for (var i = (int)_size / 2 - 1; i >= 0; i--)
 			BubbleDown((uint)i);
 	}
+
+	public Heap(IEnumerable<T> data, IComparer<T> comparer, bool isMinHeap = false) : this(data, isMinHeap) { this.Comparer = comparer; }
 
 	public bool IsEmpty()
 	{
@@ -174,8 +181,9 @@ public class Heap<T>
 
 	private bool Compare(T item1, T item2)
 	{
-		if (_isMinHeap)
-			return item1.CompareTo(item2) > 0 ? true : false;
-		return item1.CompareTo(item2) < 0 ? true : false;
+		if (this.Comparer == null)
+			return item1.CompareTo(item2) * (_isMinHeap ? 1 : -1) > 0;
+
+		return Comparer.Compare(item1, item2) * (_isMinHeap ? 1 : -1) > 0;
 	}
 }
