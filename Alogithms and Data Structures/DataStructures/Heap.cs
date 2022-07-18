@@ -47,9 +47,11 @@ public class Heap<T>
 	}
 
 	// O(n) heap constructor (bubble down all nodes from the half untill the beginning)
-	public Heap(IEnumerable<T> data, bool isMinHeap = false)
+	public Heap(IEnumerable<T> data, bool isMinHeap = false, IComparer<T>? comparer = null)
 	{
 		if (data == null) throw new ArgumentNullException(nameof(data));
+
+		if (comparer != null) this.Comparer = comparer;
 
 		this._isMinHeap = isMinHeap;
 		var size = data.Count();
@@ -71,9 +73,7 @@ public class Heap<T>
 		for (var i = (int)_size / 2 - 1; i >= 0; i--)
 			BubbleDown((uint)i);
 	}
-
-	public Heap(IEnumerable<T> data, IComparer<T> comparer, bool isMinHeap = false) : this(data, isMinHeap) { this.Comparer = comparer; }
-
+	
 	public bool IsEmpty()
 	{
 		return _size == 0;

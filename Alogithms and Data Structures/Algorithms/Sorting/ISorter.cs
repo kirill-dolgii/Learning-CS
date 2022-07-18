@@ -16,5 +16,5 @@ where T : IComparable<T>
 	/// <param name="data"></param>
 	/// <param name="comparer"></param>
 	/// <param name="order"></param>
-	public void Sort(T[] data, IComparer<T> comparer, SortingOrder order = SortingOrder.Ascending);
+	public void Sort(T[] data, IComparer<T>? comparer, SortingOrder order = SortingOrder.Ascending);
 }
