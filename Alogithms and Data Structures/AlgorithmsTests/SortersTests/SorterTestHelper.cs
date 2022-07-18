@@ -18,79 +18,36 @@ where T : IComparable<T>
 
 	private TestDataGenerator<T> Generator { get; }
 
-	private void PrepareTestData()
+	private void PrepareTestData(IComparer<T>? comparer = null)
 	{
-		var testData = Generator.GenerateData();
+		var testData = Generator.GenerateData(comparer);
 		this.Input = testData.input;
 		this.ExpectedOutput = testData.expdOutput;
 	}
 
-	[TestMethod]
-	public void Sort_Ascending()
-	{
-		PrepareTestData();
-		Sorter.Sort(this.Input);
-		var testEnumerator   = this.Input.GetEnumerator();
-		var sortedEnumerator = this.ExpectedOutput.GetEnumerator();
-
-		while (testEnumerator.MoveNext() && sortedEnumerator.MoveNext())
-		{
-			T curSorted = (T)sortedEnumerator.Current;
-			Assert.AreEqual(0, (curSorted.CompareTo((T)testEnumerator.Current)));
-		}
-	}
-
-	[TestMethod]
-	public void Sort_Descending()
-	{
-		PrepareTestData();
-		Sorter.Sort(this.Input, SortingOrder.Descending);
-		var testEnumerator   = this.Input.GetEnumerator();
-		var sortedEnumerator = this.ExpectedOutput.Reverse().GetEnumerator();
-
-		while (testEnumerator.MoveNext() && sortedEnumerator.MoveNext())
-		{
-			T curSorted = (T)sortedEnumerator.Current;
-			Assert.AreEqual(0, (curSorted.CompareTo((T)testEnumerator.Current)));
-		}
-
-		sortedEnumerator.Dispose();
-	}
-
 	private IComparer<T> Comparer { get; }
 
-	[TestMethod]
-	public void Sort_Ascending_Comparer()
+	private void TestTemplate(SortingOrder order, bool useComp)
 	{
-		PrepareTestData();
-		Sorter.Sort(this.Input, Comparer);
-		var testEnumerator   = this.Input.GetEnumerator();
-		var sortedEnumerator = this.ExpectedOutput.GetEnumerator();
+		PrepareTestData(useComp ? this.Comparer : null);
+		Sorter.Sort(this.Input, useComp ? this.Comparer : null, order);
 
-		while (testEnumerator.MoveNext() && sortedEnumerator.MoveNext())
-		{
-			T curSorted = (T)sortedEnumerator.Current;
-			Assert.AreEqual(0, Comparer.Compare((T)sortedEnumerator.Current, (T)testEnumerator.Current));
-		}
-
+		if (order == SortingOrder.Descending) this.ExpectedOutput = this.ExpectedOutput.Reverse().ToArray();
+		for (int i = 0; i < this.Input.Length; i++) 
+			Assert.AreEqual(0, this.Input[i].CompareTo(this.ExpectedOutput[i]));
 	}
 
 	[TestMethod]
-	public void Sort_Descending_Comparer()
-	{
-		PrepareTestData();
-		Sorter.Sort(this.Input, Comparer, SortingOrder.Descending);
-		var testEnumerator   = this.Input.GetEnumerator();
-		var sortedEnumerator = this.ExpectedOutput.Reverse().GetEnumerator();
+	public void Sort_Ascending() { TestTemplate(SortingOrder.Ascending, false); }
 
-		while (testEnumerator.MoveNext() && sortedEnumerator.MoveNext())
-		{
-			T curSorted = (T)sortedEnumerator.Current;
-			Assert.AreEqual(0, Comparer.Compare((T)sortedEnumerator.Current, (T)testEnumerator.Current));
-		}
+	[TestMethod]
+	public void Sort_Descending() { TestTemplate(SortingOrder.Descending, false); }
 
-		sortedEnumerator.Dispose();
-	}
+	[TestMethod]
+	public void Sort_Ascending_Comparer() { TestTemplate(SortingOrder.Ascending, true); }
+
+	[TestMethod]
+	public void Sort_Descending_Comparer() { TestTemplate(SortingOrder.Descending, true); }
 
 	private ISorter<T> Sorter { get; }
 

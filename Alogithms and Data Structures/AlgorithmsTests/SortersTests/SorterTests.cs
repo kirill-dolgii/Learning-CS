@@ -80,39 +80,39 @@ public class SorterTests
 		helper.Sort_Descending_Comparer();
 	}
 
-	[TestMethod]
-	public void MERGE_SORT_INT()
-	{
-		int IntCompFunc(int x, int y) => x.CompareTo(y);
-		var comp = new TestComparer<int>(IntCompFunc);
+    [TestMethod]
+    public void MERGE_SORT_INT()
+    {
+        int IntCompFunc(int x, int y) => x.CompareTo(y);
+        var comp = new TestComparer<int>(IntCompFunc);
 
-		Random random = new Random();
+        Random random = new Random();
 
-		var mergeSorter = new MergeSorter<int>();
+        var mergeSorter = new MergeSorter<int>();
 
-		var helper = new SorterTestHelper<int>(() => random.Next(10000), mergeSorter, comp, _testContextInstance);
-		helper.Sort_Ascending();
+        var helper = new SorterTestHelper<int>(() => random.Next(10000), mergeSorter, comp, _testContextInstance);
+        helper.Sort_Ascending();
         helper.Sort_Descending();
         helper.Sort_Ascending_Comparer();
         helper.Sort_Descending_Comparer();
     }
 
-	[TestMethod]
-	public void MERGE_SORT_GENTLEMAN()
-	{
-		int GManCompFunc(GentleMan x, GentleMan y) => x.CompareTo(y);
-		var comp = new TestComparer<GentleMan>(GManCompFunc);
+    [TestMethod]
+    public void MERGE_SORT_GENTLEMAN()
+    {
+        int GManCompFunc(GentleMan x, GentleMan y) => x.CompareTo(y);
+        var comp = new TestComparer<GentleMan>(GManCompFunc);
 
-		Random random = new Random();
+        Random random = new Random();
 
-		var mergeSorter = new MergeSorter<GentleMan>();
+        var mergeSorter = new MergeSorter<GentleMan>();
 
-		var helper = new SorterTestHelper<GentleMan>(() => new GentleMan(random.Next(10000)), mergeSorter, comp, _testContextInstance);
-		helper.Sort_Ascending();
-		helper.Sort_Descending();
-		helper.Sort_Ascending_Comparer();
-		helper.Sort_Descending_Comparer();
-	}
+        var helper = new SorterTestHelper<GentleMan>(() => new GentleMan(random.Next(10000)), mergeSorter, comp, _testContextInstance);
+        helper.Sort_Ascending();
+        helper.Sort_Descending();
+        helper.Sort_Ascending_Comparer();
+        helper.Sort_Descending_Comparer();
+    }
 
 }
 
