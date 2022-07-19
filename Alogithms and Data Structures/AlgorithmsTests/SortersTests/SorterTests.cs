@@ -165,5 +165,22 @@ public class SorterTests
 		helper.Sort_Descending_Comparer();
 	}
 
+	[TestMethod]
+	public void INSERTION_SORT_INT()
+	{
+		int IntCompFunc(int x, int y) => x.CompareTo(y);
+		var comp = new TestComparer<int>(IntCompFunc);
+
+		Random random = new Random();
+
+		var mergeSorter = new InsertionSorter<int>();
+
+		var helper = new SorterTestHelper<int>(() => random.Next(10000), mergeSorter, comp, _testContextInstance);
+		helper.Sort_Ascending();
+		helper.Sort_Descending();
+		helper.Sort_Ascending_Comparer();
+		helper.Sort_Descending_Comparer();
+	}
+
 }
 
