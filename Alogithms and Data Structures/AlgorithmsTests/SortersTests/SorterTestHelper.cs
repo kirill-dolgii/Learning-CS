@@ -6,15 +6,15 @@ namespace AlgorithmsTests.SortersTests;
 public class SorterTestHelper<T>
 where T : IComparable<T>
 {
-	public SorterTestHelper(Func<T> generator, ISorter<T> sorter, IComparer<T> comparer, TestContext tc)
+	public SorterTestHelper(Func<T> generator, Sorter<T> sorter, IComparer<T> comparer, TestContext tc)
     {
 		this.Generator = new TestDataGenerator<T>(generator);
         this.Sorter = sorter;
         this.Comparer = comparer;
-        this.tc = tc;
+        this.Tc = tc;
     }
 
-    private TestContext tc { get; }
+    private TestContext Tc { get; }
 
 	private TestDataGenerator<T> Generator { get; }
 
@@ -49,7 +49,7 @@ where T : IComparable<T>
 	[TestMethod]
 	public void Sort_Descending_Comparer() { TestTemplate(SortingOrder.Descending, true); }
 
-	private ISorter<T> Sorter { get; }
+	private Sorter<T> Sorter { get; }
 
 	private T[] Input { get; set; } = null!;
 

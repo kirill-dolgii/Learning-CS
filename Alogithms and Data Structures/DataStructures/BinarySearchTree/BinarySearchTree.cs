@@ -304,13 +304,13 @@ public class BinarySearchTree<T> : ICollection<T>
 		{
 			if (bst.Root != null)
 			{
-				this.bst = bst;
+				this._bst = bst;
 				_current = new TreeNode<T>(bst.Root.Value, bst.Root.LeftLeaf, bst.Root.RightLeaf);
 				_queue.Enqueue(bst.Root);
 			}
 		}
 
-		private BinarySearchTree<T> bst;
+		private BinarySearchTree<T> _bst;
 
 		private Queue<TreeNode<T>> _queue = new();
 
@@ -330,10 +330,10 @@ public class BinarySearchTree<T> : ICollection<T>
 
 		public void Reset()
 		{
-			if (bst.Root != null)
+			if (_bst.Root != null)
 			{
 				_queue.Clear();
-				_queue.Enqueue(bst.Root);
+				_queue.Enqueue(_bst.Root);
 			}
 		}
 

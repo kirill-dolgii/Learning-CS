@@ -1,10 +1,10 @@
 ﻿namespace Algorithms.Sorting;
 
 
-public class MergeSorter<T> : ISorter<T>
+public class MergeSorter<T> : Sorter<T>
 where T : IComparable<T>
 {
-    public void Sort(T[] data, SortingOrder order = SortingOrder.Ascending) { this.Sort(data, null, order); }
+    public override void Sort(T[] data, SortingOrder order = SortingOrder.Ascending) { this.Sort(data, null, order); }
 
     // split data from tmpData, sort and merge into data
     //						[3, 1, 5, 2]
@@ -35,14 +35,14 @@ where T : IComparable<T>
 
         for (int k = start; k < end; k++)
         {
-            if (i < middle && (j >= end || this.Compare(data[i], data[j], comp) * (order == SortingOrder.Ascending ? 1 : -1) <= 0)) tmpData[k] = data[i++];
+            if (i < middle && (j >= end || Compare(data[i], data[j], comp) * (order == SortingOrder.Ascending ? 1 : -1) <= 0)) tmpData[k] = data[i++];
             else tmpData[k] = data[j++];
         }
     }
 
-    private int Compare(T item1, T item2, IComparer<T>? comp) => comp?.Compare(item1, item2) ?? item1.CompareTo(item2);
+    //private int Compare(T item1, T item2, IComparer<T>? comp) => comp?.Compare(item1, item2) ?? item1.CompareTo(item2);
 
-    public void Sort(T[] data, IComparer<T>? comparer, SortingOrder order = SortingOrder.Ascending)
+    public override void Sort(T[] data, IComparer<T>? comparer, SortingOrder order = SortingOrder.Ascending)
     {
         T[] tmpArry = new T[data.Length];
         data.CopyTo(tmpArry, 0);
