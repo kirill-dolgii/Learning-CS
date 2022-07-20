@@ -16,16 +16,7 @@ where T : IComparable<T>
 			: BinarySearchTreeSortOrder.Descending;
 
 		BinarySearchTree<T> bst        = new(data, wrappedOrder);
-		var                 enumerator = bst.GetEnumerator(Traversal.InOrder);
-
-		// Subsequently replace values of data with sorted values from BST
-		for (int i = 0; i < data.Length; i++)
-		{
-			enumerator.MoveNext();
-			data[i] = enumerator.Current;
-		}
-
-		enumerator.Dispose();
+		bst.CopyTo(data, 0);
 	}
 }
 
