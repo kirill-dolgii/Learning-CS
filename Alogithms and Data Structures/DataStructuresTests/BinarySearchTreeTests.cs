@@ -20,15 +20,15 @@ public class BinarySearchTreeTests
 		var iter = bst.GetEnumerator(Traversal.InOrder);
 		while (iter.MoveNext()) sorted.Add(iter.Current);
 
-		var list = new List<int>(arry).DistinctBy(v => v).OrderBy(v => v).ToList();
+		var list = new List<int>(arry).OrderBy(v => v);
 
-		for (var j = 0; j < sorted.Count(); j++) Assert.AreEqual(list[j], sorted[j]);
+		Assert.IsTrue(list.SequenceEqual(sorted));
 	}
 
 	[TestMethod]
 	public void PreOrderTraversalTest()
 	{
-		void PreOrderTraversal(BinarySearchTree<int>.TreeNode<int> root, ref List<int> ret)
+		void PreOrderTraversal(BinarySearchTree<int>.TreeNode root, ref List<int> ret)
 		{
 			ret.Add(root.Value);
 			if (root.LeftLeaf != null) PreOrderTraversal(root.LeftLeaf, ref ret);
@@ -45,8 +45,8 @@ public class BinarySearchTreeTests
 
 		var goodTrav = new List<int>();
 		PreOrderTraversal(bst.Root, ref goodTrav);
-
-		for (var j = 0; j < goodTrav.Count(); j++) Assert.AreEqual(goodTrav[j], trav[j]);
+		
+		Assert.IsTrue(goodTrav.SequenceEqual(trav));
 	}
 
 	[TestMethod]
@@ -106,6 +106,30 @@ public class BinarySearchTreeTests
 		//remove a node with one left child
 		bst.Remove(5);
 		Assert.AreEqual(0, bst.Root.LeftLeaf.Value);
+	}
+
+	[TestMethod]
+	public void CopyTo_From_0()
+	{
+		int[] arry     = { 6, 5, 12, 15, 0, 4, 7 };
+		var   bst      = new BinarySearchTree<int>(arry);
+		int[] arryCopy = new int[arry.Length];
+		
+		bst.CopyTo(arryCopy, 0);
+
+		arry.SequenceEqual(arryCopy);
+	}
+
+	[TestMethod]
+	public void CopyTo_From_5()
+	{
+		int[] arry     = { 6, 5, 12, 15, 0, 4, 7 };
+		var   bst      = new BinarySearchTree<int>(arry);
+		int[] arryCopy = new int[arry.Length];
+
+		bst.CopyTo(arryCopy, 5);
+
+		arry.SequenceEqual(arryCopy.Skip(5));
 	}
 
 	[TestMethod]
