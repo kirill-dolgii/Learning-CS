@@ -53,7 +53,6 @@ public class BinarySearchTree<T> : ICollection<T>
 
 	public void Add(T item)
 	{
-		if (Contains(item)) return;
 		Add(Root, item);
 		_size++;
 	}
@@ -76,7 +75,7 @@ public class BinarySearchTree<T> : ICollection<T>
 		else
 		{
 			var cmp = this.Compare(item, addRoot.Value);
-			if (cmp < 0) addRoot.LeftLeaf = Add(addRoot.LeftLeaf, item);
+			if (cmp <= 0) addRoot.LeftLeaf = Add(addRoot.LeftLeaf, item);
 			if (cmp > 0) addRoot.RightLeaf = Add(addRoot.RightLeaf, item);
 		}
 
