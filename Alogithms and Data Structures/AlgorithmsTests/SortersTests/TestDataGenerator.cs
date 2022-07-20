@@ -10,7 +10,7 @@ where T : IComparable<T>
     public (T[] input, T[] expdOutput) GenerateData(IComparer<T>? comparer = null)
     {
         Random rand = new Random(323);
-        var size = rand.Next(50000);
+        var size = rand.Next(5000);
 
         var input = new T[size];
         var expectedOutput = new T[size];

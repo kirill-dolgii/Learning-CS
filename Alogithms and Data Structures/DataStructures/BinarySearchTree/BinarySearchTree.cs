@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 
 namespace DataStructures.BinarySearchTree;
 
@@ -39,24 +34,37 @@ public class BinarySearchTree<T> : ICollection<T>
 		_size = 0;
 	}
 
-	public BinarySearchTree(T[] arry)
-	{
-		if (arry == null) throw new ArgumentNullException(nameof(arry));
-		if (arry.Length == 0) throw new ArgumentException(nameof(arry));
+	public BinarySearchTree(T[] arry, BinarySearchTreeSortOrder order = BinarySearchTreeSortOrder.Ascdending, 
+							Comparer<T>? comparer = null)
+    {
+        if (arry == null) throw new ArgumentNullException(nameof(arry));
+        if (arry.Length == 0) throw new ArgumentException(nameof(arry));
 
-		this.Root = new TreeNode<T>(arry[0]);
-		this._size = 1;
+        this.Root = new TreeNode<T>(arry[0]);
+        this._size = 1;
 
-		foreach(T elem in arry.Skip(1).ToList()) this.Add(elem);
-	}
+		_order = order;
+		_comparer = comparer;
 
-	private int _size;
+		foreach (T elem in arry.Skip(1).ToList()) this.Add(elem);
+    }
+
+    private int _size;
 
 	public void Add(T item)
 	{
 		if (Contains(item)) return;
 		Add(Root, item);
 		_size++;
+	}
+
+	private readonly BinarySearchTreeSortOrder _order;
+	private readonly Comparer<T>?              _comparer = null;
+
+	private int Compare(T item1, T item2)
+	{
+		int compVal = this._comparer?.Compare(item1, item2) ?? item1.CompareTo(item2);
+		return compVal * (_order == BinarySearchTreeSortOrder.Ascdending ? 1 : -1);
 	}
 
 	private TreeNode<T> Add(TreeNode<T>? addRoot, T item)
@@ -67,7 +75,7 @@ public class BinarySearchTree<T> : ICollection<T>
 		}
 		else
 		{
-			var cmp = item.CompareTo(addRoot.Value);
+			var cmp = this.Compare(item, addRoot.Value);
 			if (cmp < 0) addRoot.LeftLeaf = Add(addRoot.LeftLeaf, item);
 			if (cmp > 0) addRoot.RightLeaf = Add(addRoot.RightLeaf, item);
 		}
@@ -304,13 +312,13 @@ public class BinarySearchTree<T> : ICollection<T>
 		{
 			if (bst.Root != null)
 			{
-				this.bst = bst;
+				this._bst = bst;
 				_current = new TreeNode<T>(bst.Root.Value, bst.Root.LeftLeaf, bst.Root.RightLeaf);
 				_queue.Enqueue(bst.Root);
 			}
 		}
 
-		private BinarySearchTree<T> bst;
+		private BinarySearchTree<T> _bst;
 
 		private Queue<TreeNode<T>> _queue = new();
 
@@ -330,10 +338,10 @@ public class BinarySearchTree<T> : ICollection<T>
 
 		public void Reset()
 		{
-			if (bst.Root != null)
+			if (_bst.Root != null)
 			{
 				_queue.Clear();
-				_queue.Enqueue(bst.Root);
+				_queue.Enqueue(_bst.Root);
 			}
 		}
 
