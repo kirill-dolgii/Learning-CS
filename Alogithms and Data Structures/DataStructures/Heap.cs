@@ -126,8 +126,7 @@ public class Heap<T>
 
 		Swap((uint)elemPos, _size - 1);
 		Swap((uint)_size - 1, _capacity-- - 1);
-		_container = _container.SkipLast(1).ToArray();
-		BubbleDown((uint)elemPos);
+        BubbleDown((uint)elemPos);
 
 		return true;
 	}
@@ -173,9 +172,7 @@ public class Heap<T>
 
 	private void Swap(uint item1, uint item2)
 	{
-		if (item1 == item2)
-			return;
-
+		if (item1 == item2) return;
 		(_container[item1], _container[item2]) = (_container[item2], _container[item1]);
 	}
 
