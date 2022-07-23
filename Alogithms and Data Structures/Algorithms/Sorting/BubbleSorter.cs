@@ -13,7 +13,7 @@ where T : IComparable<T>
 			// that contains n - i elements: (i, n] of data
 			// is pushed to the left
             for (int j = data.Length - 1; j > i; j--)
-				if (Compare(data[j], data[j - 1], comparer) * (order == SortingOrder.Ascending ? 1 : -1) < 0) 
+				if (Compare(data[j], data[j - 1], comparer) * ((int)order) < 0) 
 					(data[j], data[j - 1]) = (data[j - 1], data[j]);
 	}
 }

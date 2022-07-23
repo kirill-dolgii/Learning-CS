@@ -35,7 +35,7 @@ where T : IComparable<T>
 
         for (int k = start; k < end; k++)
         {
-            if (i < middle && (j >= end || Compare(data[i], data[j], comp) * (order == SortingOrder.Ascending ? 1 : -1) <= 0)) tmpData[k] = data[i++];
+            if (i < middle && (j >= end || Compare(data[i], data[j], comp) * ((int)order) <= 0)) tmpData[k] = data[i++];
             else tmpData[k] = data[j++];
         }
     }
