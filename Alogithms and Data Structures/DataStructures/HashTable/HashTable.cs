@@ -8,8 +8,6 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 	private const double DEFAULT_LOAD_FACTOR = 0.75;
 	private const double RESIZE_SCALE        = 0.65;
 
-	private TKey[]               _keys;
-	private TValue[]             _values;
 	private LinkedList<KeyValuePair<TKey, TValue>>[] _buckets;
 	private int                  _size;
 	private int                  _capacity;
@@ -26,8 +24,6 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		if (initialCapacity < 0) throw new ArgumentException(nameof(initialCapacity));
 		if (loadFactor < 0) throw new ArgumentException(nameof(loadFactor));
 
-		_keys = new TKey[initialCapacity];
-		_values = new TValue[initialCapacity];
 		_buckets = new LinkedList<KeyValuePair<TKey, TValue>>[initialCapacity];
 		_size = kvs.Count();
         _capacity = initialCapacity;
@@ -53,24 +49,20 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		int bucketIndex = AdjustIndex(hash);
 
 		_buckets[bucketIndex] ??= new();
-
 		_buckets[bucketIndex].AddLast(item);
-		_keys[_size] = item.Key;
-		_values[_size++] = item.Value;
+
+		_size++;
 	}
 
 	private void Resize()
 	{
 		if (_size <= _capacity * _loadFactor && _size <= _capacity * Math.Pow(_loadFactor, 2)) return;
 
-		var tmp = _keys.Where(k => k != null).Zip(_values.Where(v => v != null), 
-												  (k, v) => new KeyValuePair<TKey, TValue>(k, v)).ToArray();
+		var tmp = _buckets.Where(b => b!= null).SelectMany(b => b).ToArray();
 
 		if (_capacity >= _capacity * _loadFactor) _capacity = (int)(_capacity / _loadFactor / RESIZE_SCALE);
 		if (_capacity <= _capacity * _loadFactor * RESIZE_SCALE) _capacity = (int)(_capacity * _loadFactor);
 
-		_keys = new TKey[_capacity];
-		_values = new TValue[_capacity];
 		_buckets = new LinkedList<KeyValuePair<TKey, TValue>>[_capacity];
 		_size = 0;
 
@@ -79,8 +71,6 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 	public void Clear()
 	{
-		_keys = new TKey[_capacity];
-		_values = new TValue[_capacity];
 		_size = 0;
 		_buckets = new LinkedList<KeyValuePair<TKey, TValue>>[_capacity];
 		Resize();
@@ -99,10 +89,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		throw new NotImplementedException();
 	}
 
-	public bool Remove(KeyValuePair<TKey, TValue> item)
-	{
-		throw new NotImplementedException();
-	}
+	public bool Remove(KeyValuePair<TKey, TValue> item) => Remove(item.Key);
 
 	public int  Count      => _size;
 	public bool IsReadOnly => false;
@@ -118,7 +105,26 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 	public bool Remove(TKey key)
 	{
-		throw new NotImplementedException();
+		if (key == null) throw new ArgumentNullException(nameof(key));
+
+		int hash          = _hashFunc.GetHash(key);
+		int adjustedIndex = AdjustIndex(hash);
+
+		var list          = _buckets[adjustedIndex];
+		if (list == null) return false;
+
+		var node          = BucketFindKey(_buckets[adjustedIndex], key);
+		list.Remove(node);
+		return EqualityComparer<TKey>.Default.Equals(node.Value.Key, key);
+	}
+	
+	private LinkedListNode<KeyValuePair<TKey, TValue>> BucketFindKey(LinkedList<KeyValuePair<TKey, TValue>> list, TKey key)
+	{
+		if (key == null) throw new ArgumentNullException(nameof(key));
+		if (list == null) throw new ArgumentNullException(nameof(key));
+		var node = list.First;
+		while (!EqualityComparer<TKey>.Default.Equals(node.Value.Key, key)) node = node.Next;
+		return node;
 	}
 
 	public bool TryGetValue(TKey key, out TValue value)
@@ -137,8 +143,8 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		}
 		set => throw new NotImplementedException();
 	}
-
-	public ICollection<TKey> Keys => this._keys;
+		
+	public ICollection<TKey> Keys => null;
 
 	public ICollection<TValue> Values => null;
 	

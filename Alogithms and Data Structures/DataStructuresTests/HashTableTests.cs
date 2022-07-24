@@ -38,12 +38,12 @@ public class HashTableTests
 																				 rand.Next(10, 80)),
 																			 new(RandomString(rand.Next(3, 20), rand),
 																				 rand.Next(10, 3000000)))).ToArray();
+		foreach (var td in _testData) _ht.Add(td);
 	}
 
 	[TestMethod]
 	public void ADD_SUCCESSFULLY()
 	{
-		foreach (var td in _testData) _ht.Add(td);
 		foreach (var td in _testData)
 		{
 			Assert.IsTrue(_ht.Contains(td));
@@ -54,7 +54,6 @@ public class HashTableTests
 	[TestMethod]
 	public void CLEAR()
 	{
-		foreach (var td in _testData) _ht.Add(td);
 		_ht.Clear();
 		foreach (var td in _testData) Assert.IsFalse(_ht.Contains(td));
 	}
@@ -62,10 +61,31 @@ public class HashTableTests
 	[TestMethod]
 	public void ADD_CLEAR_ADD()
 	{
-		foreach (var td in _testData) _ht.Add(td);
 		_ht.Clear();
 		foreach (var td in _testData) _ht.Add(td);
 		foreach (var td in _testData) Assert.IsTrue(_ht.Contains(td));
 	}
+
+	[TestMethod]	
+	public void REMOVE_SUCCESSFUL_KEY()
+	{
+		Assert.IsTrue(_ht.Remove(_testData.First().Key));
+		Assert.IsFalse(_ht.Contains(_testData.First()));
+	}
+
+	[TestMethod]
+	public void REMOVE_NOT_EXISTING_KEY() => Assert.IsFalse(_ht.Remove(new Person("nobody", 123)));
+
+	[TestMethod]
+	public void REMOVE_NULL_KEY() => Assert.ThrowsException<ArgumentNullException>(() => _ht.Remove(null));
+
+	[TestMethod]
+	public void REMOVE_SUCCESSFUL_KV_PAIR() => Assert.IsTrue(_ht.Remove(_testData.First()));
+
+	[TestMethod]
+	public void REMOVE_NULL_KV_PAIR() =>
+		Assert.ThrowsException<ArgumentNullException>(() => _ht.Remove(new KeyValuePair<Person, Country>(null, null)));
+
+
 }
 
