@@ -78,7 +78,7 @@ public class HashTableTests
 
 	[TestMethod]
 	public void REMOVE_NULL_KEY() => Assert.ThrowsException<ArgumentNullException>(() => _ht.Remove(null));
-
+	
 	[TestMethod]
 	public void REMOVE_SUCCESSFUL_KV_PAIR() => Assert.IsTrue(_ht.Remove(_testData.First()));
 
@@ -86,6 +86,7 @@ public class HashTableTests
 	public void REMOVE_NULL_KV_PAIR() =>
 		Assert.ThrowsException<ArgumentNullException>(() => _ht.Remove(new KeyValuePair<Person, Country>(null, null)));
 
-
+	[TestMethod]
+	public void TRY_GET_NOT_EXISTING_KEY() => Assert.IsFalse(_ht.TryGetValue(new Person("Vova", 34), out Country val));
 }
 

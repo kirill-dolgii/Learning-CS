@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DataStructures.HashTable;
 
@@ -100,7 +101,14 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 	public bool ContainsKey(TKey key)
 	{
-		throw new NotImplementedException();
+		if (key == null) throw new ArgumentNullException(nameof(key));
+
+		int hash = _hashFunc.GetHash(key);
+		int adjustedIndex = AdjustIndex(hash);
+
+		var list = _buckets[adjustedIndex];
+		if (list == null) return false;
+		return BucketFindKey(list, key) != null;
 	}
 
 	public bool Remove(TKey key)
@@ -113,23 +121,28 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		var list          = _buckets[adjustedIndex];
 		if (list == null) return false;
 
-		var node          = BucketFindKey(_buckets[adjustedIndex], key);
+		var node          = BucketFindKey(list, key);
+		if (node == null) return false;
+
 		list.Remove(node);
-		return EqualityComparer<TKey>.Default.Equals(node.Value.Key, key);
+		return true;
 	}
 	
-	private LinkedListNode<KeyValuePair<TKey, TValue>> BucketFindKey(LinkedList<KeyValuePair<TKey, TValue>> list, TKey key)
+	private LinkedListNode<KeyValuePair<TKey, TValue>>? BucketFindKey(LinkedList<KeyValuePair<TKey, TValue>> list, TKey key)
 	{
 		if (key == null) throw new ArgumentNullException(nameof(key));
 		if (list == null) throw new ArgumentNullException(nameof(key));
-		var node = list.First;
-		while (!EqualityComparer<TKey>.Default.Equals(node.Value.Key, key)) node = node.Next;
-		return node;
+
+		for (var node = list.First; node != null; node = node.Next) 
+			if (EqualityComparer<TKey>.Default.Equals(node.Value.Key, key)) return node;
+		return null;
 	}
 
 	public bool TryGetValue(TKey key, out TValue value)
 	{
-		throw new NotImplementedException();
+		bool comp = ContainsKey(key);
+		value = (comp ? this[key] : default)!;
+		return comp;
 	}
 
 	public TValue this[TKey key]
@@ -139,7 +152,12 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 			int hash = _hashFunc.GetHash(key);
 			int adjustedHash = AdjustIndex(hash);
 
-			return _buckets[adjustedHash].First(node => EqualityComparer<TKey>.Default.Equals(node.Key, key)).Value;
+			if (_buckets[adjustedHash] == null) throw new KeyNotFoundException(nameof(key));
+
+			var ret = _buckets[adjustedHash].FirstOrDefault(node => EqualityComparer<TKey>.Default.Equals(node.Key, key)).Value;
+			if (EqualityComparer<TValue>.Default.Equals(ret, default(TValue))) throw new KeyNotFoundException(nameof(key));
+
+			return ret;
 		}
 		set => throw new NotImplementedException();
 	}
