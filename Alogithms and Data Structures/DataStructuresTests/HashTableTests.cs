@@ -139,5 +139,21 @@ public class HashTableTests
 	[TestMethod]
 	public void GETTER_NULL() => Assert.ThrowsException<ArgumentNullException>(() => _ht[null]);
 
+	[TestMethod]
+	public void KEYS_COLLECTION()
+	{
+		var keys = _ht.Keys;
+		Assert.AreEqual(keys.Count, _testData.Count());
+		Assert.IsTrue(keys.All(k => _expHt.ContainsKey(k)));
+	}
+
+	[TestMethod]
+	public void VALUES_COLLECTION()
+	{
+		var keys = _ht.Values;
+		Assert.AreEqual(keys.Count, _testData.Count());
+		Assert.IsTrue(keys.All(v => _expHt.ContainsValue(v)));
+	}
+
 }
 

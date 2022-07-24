@@ -13,10 +13,10 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 	private int                  _size;
 	private int                  _capacity;
 
-	private readonly double             _loadFactor;
+	private readonly double              _loadFactor;
 	private readonly HashFunction<TKey> _hashFunc;
 
-	private HashTable(IEnumerable<KeyValuePair<TKey, TValue>> kvs,
+	public HashTable(IEnumerable<KeyValuePair<TKey, TValue>> kvs,
 					  int initialCapacity, 
 					  double loadFactor, 
 					  HashFunction<TKey> hashFunc)
@@ -27,9 +27,9 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 		_buckets = new LinkedList<KeyValuePair<TKey, TValue>>[initialCapacity];
 		_size = kvs.Count();
-        _capacity = initialCapacity;
+        _capacity = new int[] { initialCapacity, DEFAULT_CAPACITY, kvs.Count()}.Max();
         _loadFactor = loadFactor;
-        _hashFunc = hashFunc;
+        _hashFunc = hashFunc ?? throw new ArgumentNullException(nameof(hashFunc));
 
 		foreach (var kv in kvs) this.Add(kv);
 	}
@@ -39,6 +39,9 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 							  DEFAULT_LOAD_FACTOR, new()) {}
 
 	public HashTable(HashFunction<TKey> hf) : this() { _hashFunc = hf; }
+
+	public HashTable(IEnumerable<KeyValuePair<TKey, TValue>> data, 
+					 HashFunction<TKey> hf) : this (data, data.Count(), DEFAULT_LOAD_FACTOR, hf) {}
 
 	private int AdjustIndex(int hash) => hash % _capacity;
 
@@ -86,10 +89,8 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		return _buckets[bucketIndex].Contains(item);
 	}
 
-	public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-	{
-		throw new NotImplementedException();
-	}
+	public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) 
+		=> _buckets.Where(b => b != null).SelectMany(b => b).ToArray().CopyTo(array, arrayIndex);
 
 	public bool Remove(KeyValuePair<TKey, TValue> item) => Remove(item.Key);
 
@@ -166,19 +167,17 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		}
 		set => Add(new KeyValuePair<TKey, TValue>(key, value));
 	}
-		
-	public ICollection<TKey> Keys => null;
+	
+	public ICollection<TKey> Keys => _buckets.Where(b => b != null).SelectMany(b => b.ToArray()).Select(kv => kv.Key).ToList();
 
-	public ICollection<TValue> Values => null;
+	public ICollection<TValue> Values => _buckets.Where(b => b != null).SelectMany(b => b.ToArray()).Select(kv => kv.Value).ToList();
 	
 	public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
 	{
-		throw new NotImplementedException();
+		var enumerable = _buckets.Where(b => b != null).SelectMany(b => b.ToArray());
+		return enumerable.GetEnumerator();
 	}
 
-	IEnumerator IEnumerable.GetEnumerator()
-	{
-		return GetEnumerator();
-	}
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
