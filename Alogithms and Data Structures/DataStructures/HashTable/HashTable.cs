@@ -44,6 +44,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 	public void Add(KeyValuePair<TKey, TValue> item)
 	{
+		if (item.Key == null) throw new ArgumentNullException(nameof(item.Key));
 		Resize();
 		
 		int hash = _hashFunc.GetHash(item.Key);
@@ -59,7 +60,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 	{
 		if (_size <= _capacity * _loadFactor && _size <= _capacity * Math.Pow(_loadFactor, 2)) return;
 
-		var tmp = _buckets.Where(b => b!= null).SelectMany(b => b).ToArray();
+		var tmp = _buckets.Where(b => b != null).SelectMany(b => b).ToArray();
 
 		if (_capacity >= _capacity * _loadFactor) _capacity = (int)(_capacity / _loadFactor / RESIZE_SCALE);
 		if (_capacity <= _capacity * _loadFactor * RESIZE_SCALE) _capacity = (int)(_capacity * _loadFactor);
@@ -124,6 +125,8 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		var node          = BucketFindKey(list, key);
 		if (node == null) return false;
 
+		_size--;
+
 		list.Remove(node);
 		return true;
 	}
@@ -149,6 +152,8 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 	{
 		get
 		{
+			if (key == null) throw new ArgumentNullException(nameof(key));
+
 			int hash = _hashFunc.GetHash(key);
 			int adjustedHash = AdjustIndex(hash);
 
@@ -159,7 +164,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 			return ret;
 		}
-		set => throw new NotImplementedException();
+		set => Add(new KeyValuePair<TKey, TValue>(key, value));
 	}
 		
 	public ICollection<TKey> Keys => null;
