@@ -44,12 +44,28 @@ public class HashTableTests
 	public void ADD_SUCCESSFULLY()
 	{
 		foreach (var td in _testData) _ht.Add(td);
-
 		foreach (var td in _testData)
 		{
 			Assert.IsTrue(_ht.Contains(td));
-            Assert.AreEqual(_ht[td.Key], td.Value);
+			Assert.AreEqual(_ht[td.Key], td.Value);
 		}
+	}
+
+	[TestMethod]
+	public void CLEAR()
+	{
+		foreach (var td in _testData) _ht.Add(td);
+		_ht.Clear();
+		foreach (var td in _testData) Assert.IsFalse(_ht.Contains(td));
+	}
+
+	[TestMethod]
+	public void ADD_CLEAR_ADD()
+	{
+		foreach (var td in _testData) _ht.Add(td);
+		_ht.Clear();
+		foreach (var td in _testData) _ht.Add(td);
+		foreach (var td in _testData) Assert.IsTrue(_ht.Contains(td));
 	}
 }
 

@@ -79,11 +79,16 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 	public void Clear()
 	{
-		throw new NotImplementedException();
+		_keys = new TKey[_capacity];
+		_values = new TValue[_capacity];
+		_size = 0;
+		_buckets = new LinkedList<KeyValuePair<TKey, TValue>>[_capacity];
+		Resize();
 	}
 
 	public bool Contains(KeyValuePair<TKey, TValue> item)
 	{
+		if (_size == 0) return false;
 		int hash = _hashFunc.GetHash(item.Key);
 		int bucketIndex = AdjustIndex(hash);
 		return _buckets[bucketIndex].Contains(item);
