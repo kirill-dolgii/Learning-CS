@@ -6,7 +6,7 @@ public class HashFunction<T>
 
 	public HashFunction() {}
 
-	protected HashFunction(Func<T, int> hashGenerator) => _hashGenerator = hashGenerator;
+	public HashFunction(Func<T, int> hashGenerator) => _hashGenerator = hashGenerator;
 
 	public int GetHash(T value)
 	{
