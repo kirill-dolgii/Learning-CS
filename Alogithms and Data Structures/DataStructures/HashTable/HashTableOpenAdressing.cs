@@ -140,7 +140,15 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 	public bool ContainsKey(TKey key)
 	{
-		throw new NotImplementedException();
+		if (key == null) throw new ArgumentNullException($"{nameof(key)} was null.");
+		int index = AdjustedHash(key);
+		for (int i = 0; _entities[index] != null && i <= _size; i++)
+		{
+			if (EqualityComparer<TKey>.Default.Equals(key, _entities[index].kv.Key)) return true;
+			index = Probe(index, i);
+		}
+
+		return false;
 	}
 
 	public bool Remove(TKey key)
