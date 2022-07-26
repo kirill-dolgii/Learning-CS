@@ -72,25 +72,27 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 	public void Add(KeyValuePair<TKey, TValue> item)
 	{
 		if (item.Key == null) throw new NotSupportedException($"{nameof(item.Key)} was null.");
-		Resize();
+		if (ContainsKey(item.Key))
+			throw new ArgumentException($"An element with {nameof(item.Key)} key already exists");
+
+		if (_size >= _capacity * _loadFactor) Resize((int)(_capacity / RESIZE_SCALE));
 
 		int index = AdjustedHash(item.Key);
 
-		for (var i = 1; _entities[index] != null && !_entities[index]!.isDeleted; i++) index = Probe(index, i);
+		for (var i = 0; _entities[index] != null && !_entities[index]!.isDeleted; i++) 
+			index = Probe(index, i);
+
 		_entities[index] = new KeyValuePairEntity(item, false);
 		_addedValues.Add(_entities[index]!);
 		_size++;
 	}
 
-	private void Resize()
+	private void Resize(int newCapacity)
 	{
-		if (_size < _capacity * _loadFactor) return;
-
 		var existing = _addedValues.Where(ent => ent is { isDeleted: false }).ToArray();
 
-		if (_capacity >= _capacity * _loadFactor) _capacity = (int)(_capacity / _loadFactor / RESIZE_SCALE);
-		if (_capacity <= _capacity * _loadFactor * RESIZE_SCALE) _capacity = (int)(_capacity * _loadFactor);
-		
+		_capacity = newCapacity;
+
 		_entities = new KeyValuePairEntity?[_capacity];
 		_addedValues = new List<KeyValuePairEntity>(_capacity);
 		_size = 0;
@@ -105,12 +107,12 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 	public bool Contains(KeyValuePair<TKey, TValue> item)
 	{
-		if (item.Key == null) throw new NotSupportedException($"{nameof(item.Key)} was null.");
+		if (item.Key == null) throw new ArgumentException($"{nameof(item.Key)} was null.");
 		int index = AdjustedHash(item.Key);
 
 		if (_entities[index] == null) return false;
 
-		for (int i = 1; _entities[index] != null; i++)
+		for (int i = 0; _entities[index] != null; i++)
 		{
 			if (EqualityComparer<TValue>.Default.Equals(_entities[index]!.kv.Value, item.Value)) 
 				return true;
@@ -130,13 +132,15 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		int index = AdjustedHash(item.Key);
 
 		if (_entities[index] == null) return false;
-		for (int i = 1; _entities[index] != null; i++)
+		for (int i = 0; _entities[index] != null; i++)
 		{
 			if (EqualityComparer<TValue>.Default.Equals(_entities[index]!.kv.Value, item.Value))
 			{
 				_entities[index]!.Delete();
 				_entities[index] = new KeyValuePairEntity(item, true);
 				_size--;
+				if (_size <= _capacity * _loadFactor * RESIZE_SCALE)
+					Resize((int)(_capacity * RESIZE_SCALE));
 				return true;
 			}
 
