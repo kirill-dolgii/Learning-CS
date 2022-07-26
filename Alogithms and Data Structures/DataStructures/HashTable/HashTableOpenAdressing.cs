@@ -38,17 +38,32 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		if (loadFactor <= 0 || loadFactor > 1) throw new ArgumentException(nameof(loadFactor));
 		if (data == null) throw new ArgumentNullException(nameof(data));
 
-		_capacity = new int[] { DEFAILT_CAPACITY, initialCapacity, data.Count() }.Max();
+		_loadFactor = loadFactor;
+		_capacity = new int[] { DEFAILT_CAPACITY, initialCapacity, 
+								(int)(data.Count() / _loadFactor) }.Max();
+
 		_entities = new KeyValuePairEntity?[_capacity];
 		_addedValues = new List<KeyValuePairEntity>(_capacity);
-		_loadFactor = loadFactor;
 		_hf = hf;
+
+		foreach (var kv in data) this.Add(kv);
 	}
 
 	public HashTableOpenAddressingBase() : this(Enumerable.Empty<KeyValuePair<TKey, TValue>>(), 
-											   DEFAILT_CAPACITY, 
-										       DEFAULT_LOAD_FACTOR, 
-										       new()) {}
+											    DEFAILT_CAPACITY, 
+										        DEFAULT_LOAD_FACTOR, 
+										        new()) {}
+
+	public HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data) : this(data, 
+																							DEFAILT_CAPACITY, 
+																							DEFAULT_LOAD_FACTOR, 
+																							new()) {}
+
+	public HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data, 
+									   HashFunction<TKey> hashFunc) : this(data,
+																		   DEFAILT_CAPACITY,
+																		   DEFAULT_LOAD_FACTOR,
+																		   hashFunc) {}
 
 	private int AdjustedHash(TKey key) => Math.Abs(_hf.GetHash(key)) % _capacity;
 
