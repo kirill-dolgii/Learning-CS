@@ -12,10 +12,12 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		public void Delete() { isDeleted = true; }
 	}
 
-
 	private const int    DEFAILT_CAPACITY    = 4;
 	private const double DEFAULT_LOAD_FACTOR = 0.75;
 	private const double RESIZE_SCALE        = 0.65;
+
+	private IEqualityComparer<TKey> keyCmp = EqualityComparer<TKey>.Default;
+	private IEqualityComparer<TValue> valCmp = EqualityComparer<TValue>.Default;
 
 	private TKey[]   _keys;
 	private TValue[] _values;
@@ -23,7 +25,7 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 	private KeyValuePairEntity?[] _entities;
 
 	private int _size;
-	private int _capacity;
+	protected int _capacity;
 
 	private double             _loadFactor;
 	private HashFunction<TKey> _hf;
@@ -49,25 +51,25 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		foreach (var kv in data) this.Add(kv);
 	}
 
-	public HashTableOpenAddressingBase() : this(Enumerable.Empty<KeyValuePair<TKey, TValue>>(), 
-											    DEFAILT_CAPACITY, 
-										        DEFAULT_LOAD_FACTOR, 
-										        new()) {}
+	private protected HashTableOpenAddressingBase() : this(Enumerable.Empty<KeyValuePair<TKey, TValue>>(), 
+														   DEFAILT_CAPACITY, 
+														   DEFAULT_LOAD_FACTOR, 
+														   new()) {}
 
-	public HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data) : this(data, 
-																							DEFAILT_CAPACITY, 
-																							DEFAULT_LOAD_FACTOR, 
-																							new()) {}
+	private protected HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data) : this(data, 
+																									   DEFAILT_CAPACITY, 
+																									   DEFAULT_LOAD_FACTOR, 
+																									   new()) {}
 
-	public HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data, 
-									   HashFunction<TKey> hashFunc) : this(data,
-																		   DEFAILT_CAPACITY,
-																		   DEFAULT_LOAD_FACTOR,
-																		   hashFunc) {}
+	private protected HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data, 
+												  HashFunction<TKey> hashFunc) : this(data,
+																					  DEFAILT_CAPACITY,
+																					  DEFAULT_LOAD_FACTOR,
+																					  hashFunc) {}
 
 	private int AdjustedHash(TKey key) => Math.Abs(_hf.GetHash(key)) % _capacity;
 
-	protected virtual int Probe(int index, int i) => (index + i) % _capacity;
+	protected abstract int Probe(int index, int i);
 
 	public void Add(KeyValuePair<TKey, TValue> item)
 	{
@@ -112,12 +114,10 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 		if (_entities[index] == null) return false;
 
-		for (int i = 0; _entities[index] != null; i++)
-		{
-			if (EqualityComparer<TValue>.Default.Equals(_entities[index]!.kv.Value, item.Value)) 
+		for (int i = 0; _entities[index] != null; index = Probe(index, i++))
+			if (valCmp.Equals(_entities[index]!.kv.Value, item.Value))
 				return true;
-			index = Probe(index, i);
-		}
+
 		return false;
 	}
 
@@ -150,8 +150,8 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		return false;
 	}
 
-	public int  Count      { get; }
-	public bool IsReadOnly { get; }
+	public int  Count      { get => _size; }
+	public bool IsReadOnly { get => false; }
 	public void Add(TKey key, TValue value)
 	{
 		throw new NotImplementedException();
