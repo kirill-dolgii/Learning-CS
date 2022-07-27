@@ -37,7 +37,7 @@ public class HashTableOpenAddressingTests
 															  new City(RandomString(rand.Next(10), rand), rand.Next(50)))).
 							   ToArray();
 
-		_hf = new HashFunction<Person>(p => p.Age * p.Name.GetHashCode());
+		_hf = new HashFunction<Person>(p => p.Age * p.Name.Length * 33333);
 		_testDict = new HashTableLinearProbing<Person, City>(_hf);
         _expectedDict = new Dictionary<Person, City>();
 	}
@@ -139,6 +139,18 @@ public class HashTableOpenAddressingTests
 	{
 		foreach (var td in _testData) _testDict.Add(td);
 		Assert.IsFalse(_testDict.Remove(new Person("---aaa222", 12)));
+	}
+
+	[TestMethod]
+	public void GET_VALUE_OPERATOR_SUCCESSFUL()
+	{
+		foreach (var td in _testData) _testDict.Add(td);
+		foreach (var td in _testData)
+		{
+			var valFromDict = _testDict[td.Key];
+			Assert.AreEqual(valFromDict.Name, td.Value.Name);
+			Assert.AreEqual(valFromDict.Population, td.Value.Population);
+		}
 	}
 }	
 	

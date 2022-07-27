@@ -194,7 +194,14 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 	public TValue this[TKey key]
 	{
-		get => throw new NotImplementedException();
+		get
+		{
+			if (key == null) throw new ArgumentNullException($"{nameof(key)} was null");
+			int index = FindEntityIndex(key);
+			if (index == -1) throw new KeyNotFoundException($"{nameof(key)} is not presented in the hash table.");
+
+			return _entities[index]!.kv.Value;
+		}
 		set => throw new NotImplementedException();
 	}
 
