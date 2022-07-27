@@ -128,25 +128,7 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		throw new NotImplementedException();
 	}
 
-    public bool Remove(KeyValuePair<TKey, TValue> item)
-	{
-		if (item.Key == null) throw new ArgumentNullException($"{nameof(item.Key)} was null.");
-		int index = AdjustedHash(item.Key);
-
-		if (_entities[index] == null) return false;
-		for (int i = 0; _entities[index] != null && i <= _capacity; index = Probe(index, i++))
-			if (valCmp.Equals(_entities[index]!.kv.Value, item.Value))
-			{
-				_entities[index]!.Delete();
-				_entities[index] = new KeyValuePairEntity(item, true);
-				_size--;
-				if (_size <= _capacity * _loadFactor * RESIZE_SCALE && _size > DEFAILT_CAPACITY)
-					Resize((int)(_capacity * RESIZE_SCALE));
-				return true;
-			}
-
-		return false;
-	}
+    public bool Remove(KeyValuePair<TKey, TValue> item) => Remove(item.Key);
 
 	public int  Count      { get => _size; }
 	public bool IsReadOnly { get => false; }
@@ -167,25 +149,19 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 	public bool Remove(TKey key)
 	{
-		if (key == null) throw new ArgumentNullException($"{nameof(key)} was null.");
-		int index = AdjustedHash(key);
+        if (key == null) throw new ArgumentNullException($"{nameof(key)} was null.");
+		int index = FindEntityIndex(key);
 
-		if (_entities[index] == null) return false;
-		for (int i = 0; _entities[index] != null&& i <= _capacity; index = Probe(index, i++))
-		{
-			if (keyCmp.Equals(key, _entities[index].kv.Key))
-			{
-				_entities[index]!.Delete();
-				_entities[index] = new KeyValuePairEntity(new KeyValuePair<TKey, TValue>(key, default(TValue)!), true);
-				_size--;
-				if (_size <= _capacity * _loadFactor * RESIZE_SCALE && _size > DEFAILT_CAPACITY)
-					Resize((int)(_capacity * RESIZE_SCALE));
-				return true;
-			}
-		}
+		if (index == -1) return false;
 
-		return false;
-	}
+        _entities[index]!.Delete();
+        _entities[index] = new KeyValuePairEntity(new KeyValuePair<TKey, TValue>(key, default(TValue)!), true);
+
+		if (--_size <= _capacity * _loadFactor * RESIZE_SCALE && _size > DEFAILT_CAPACITY)
+            Resize((int)(_capacity * RESIZE_SCALE));
+
+		return true;
+    }
 
 	public bool TryGetValue(TKey key, out TValue value)
 	{
