@@ -152,5 +152,23 @@ public class HashTableOpenAddressingTests
 			Assert.AreEqual(valFromDict.Population, td.Value.Population);
 		}
 	}
+
+	[TestMethod]
+	public void GET_VALUE_OPERATOR_NOT_EXISTING() => 
+		Assert.ThrowsException<KeyNotFoundException>(() => _testDict[new Person("asd", 3222)]);
+
+	[TestMethod]
+	public void SET_VALUE_SUCCESSFUL()
+	{
+		var rand = new Random(323);
+		foreach (var td in _testData) _testDict.Add(td);
+
+		var newValues = Enumerable.Range(0, _testDict.Count)
+								.Select(i => new City(RandomString(10, rand), rand.Next(500))).ToList();
+		var tdata = _testData.ToList();
+
+		for (int i = 0; i < newValues.Count; i++) _testDict[tdata[i].Key] = newValues[i];
+		for (int i = 0; i < newValues.Count; i++) Assert.AreEqual(_testDict[tdata[i].Key], newValues[i]);
+	}
 }	
 	

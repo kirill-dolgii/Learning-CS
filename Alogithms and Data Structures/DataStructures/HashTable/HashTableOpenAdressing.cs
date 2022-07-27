@@ -178,7 +178,12 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 			return _entities[index]!.kv.Value;
 		}
-		set => throw new NotImplementedException();
+		set
+		{
+			int index = FindEntityIndex(key);
+			if (index == -1) throw new KeyNotFoundException($"{nameof(key)} is not presented in the hash table.");
+			_entities[index]!.kv = new KeyValuePair<TKey, TValue>(key, value);
+		}
 	}
 
 	public ICollection<TKey> Keys => _addedValues.Where(ent => !ent.isDeleted).Select(ent => ent.kv.Key).ToList();
