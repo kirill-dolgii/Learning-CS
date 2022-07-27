@@ -159,7 +159,7 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 	{
 		if (key == null) throw new ArgumentNullException($"{nameof(key)} was null.");
 		int index = AdjustedHash(key);
-		for (int i = 0; _entities[index] != null && i <= _capacity; index = Probe(index, i++))
+		for (int i = 0; _entities[index] != null && i <= _capacity && !_entities[index]!.isDeleted; index = Probe(index, i++))
 			if (EqualityComparer<TKey>.Default.Equals(key, _entities[index]!.kv.Key))
 				return true;
 
@@ -168,7 +168,24 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 	public bool Remove(TKey key)
 	{
-		throw new NotImplementedException();
+		if (key == null) throw new ArgumentNullException($"{nameof(key)} was null.");
+		int index = AdjustedHash(key);
+
+		if (_entities[index] == null) return false;
+		for (int i = 0; _entities[index] != null&& i <= _capacity; index = Probe(index, i++))
+		{
+			if (keyCmp.Equals(key, _entities[index].kv.Key))
+			{
+				_entities[index]!.Delete();
+				_entities[index] = new KeyValuePairEntity(new KeyValuePair<TKey, TValue>(key, default(TValue)!), true);
+				_size--;
+				if (_size <= _capacity * _loadFactor * RESIZE_SCALE && _size > DEFAILT_CAPACITY)
+					Resize((int)(_capacity * RESIZE_SCALE));
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public bool TryGetValue(TKey key, out TValue value)

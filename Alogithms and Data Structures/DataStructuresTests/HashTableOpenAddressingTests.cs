@@ -122,5 +122,23 @@ public class HashTableOpenAddressingTests
 	[TestMethod]
 	public void CONTAINS_KEY_NOT_EXISTING() => Assert.IsFalse(_testDict.ContainsKey(new Person("asd", 13)));
 
+	[TestMethod]
+	public void REMOVE_KEY_SUCCESSFUL()
+	{
+		foreach (var td in _testData.Take(5)) _testDict.Add(td);
+		foreach (var td in _testData.Take(5)) Assert.IsTrue(_testDict.Remove(td.Key));
+        foreach (KeyValuePair<Person, City> td in _testData) Assert.IsFalse(_testDict.ContainsKey(td.Key));
+		Assert.AreEqual(0, _testDict.Count);
+	}
+
+	[TestMethod]
+	public void REMOVE_KEY_NULL() => Assert.ThrowsException<ArgumentNullException>(() => _testDict.Remove(null));
+
+	[TestMethod]
+	public void REMOVE_KEY_NOT_EXISTING()
+	{
+		foreach (var td in _testData) _testDict.Add(td);
+		Assert.IsFalse(_testDict.Remove(new Person("---aaa222", 12)));
+	}
 }	
 	
