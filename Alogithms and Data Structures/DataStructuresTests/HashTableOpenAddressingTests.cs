@@ -14,7 +14,6 @@ public class HashTableOpenAddressingTests
 
 	private record City(string Name, int Population);
 
-	private IDictionary<Person, City>                 _expectedDict;
 	private HashTableOpenAddressingBase<Person, City> _testDict;
 	private IEnumerable<KeyValuePair<Person, City>>   _testData;
 	private HashFunction<Person>                      _hf;
@@ -39,7 +38,6 @@ public class HashTableOpenAddressingTests
 
 		_hf = new HashFunction<Person>(p => p.Age * p.Name.Length * 33333);
 		_testDict = new HashTableLinearProbing<Person, City>(_hf);
-        _expectedDict = new Dictionary<Person, City>();
 	}
 
 	[TestMethod]
