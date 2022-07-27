@@ -36,13 +36,14 @@ public class HashTableOpenAddressingTests
 															  new Person(RandomString(rand.Next(10), rand), rand.Next(50)),
 															  new City(RandomString(rand.Next(10), rand), rand.Next(50)))).
 							   ToArray();
-        _testDict = new HashTableLinearProbing<Person, City>(_hf);
-        _expectedDict = new Dictionary<Person, City>();
+
 		_hf = new HashFunction<Person>(p => p.Age * p.Name.GetHashCode());
+		_testDict = new HashTableLinearProbing<Person, City>(_hf);
+        _expectedDict = new Dictionary<Person, City>();
 	}
 
 	[TestMethod]
-	public void CONSTRUCTOR_FROM_ENUMERABLE()
+	public void CONSTRUCTION_FROM_ENUMERABLE()
 	{
 		_testDict = new HashTableLinearProbing<Person, City>(_testData, _hf);
 		foreach (var kv in _testData) Assert.IsTrue(_testDict.Contains(kv));
@@ -51,21 +52,21 @@ public class HashTableOpenAddressingTests
 	[TestMethod]
 	public void CONSTRUCTION_BY_ADDING()
 	{
-		_testDict = new HashTableLinearProbing<Person, City>(_hf);
-		foreach (var td in _testData) _testDict.Add(td);
+		foreach (var td in _testData) 
+			_testDict.Add(td);
 		foreach (var kv in _testData) Assert.IsTrue(_testDict.Contains(kv));
 		Assert.AreEqual(_testDict.Count, _testData.Count());
 	}
 
 	[TestMethod]
-	public void DUPLICATE_KEY_ADDITION()
+	public void ADD_DUPLICATE_KEY()
 	{
 		_testDict.Add(_testData.First());
 		Assert.ThrowsException<NotSupportedException>(() => _testDict.Add(_testData.First()));
 	}
 
 	[TestMethod]
-	public void NULL_KEY_ADDITION()
+	public void ADD_NULL()
 	{
 		Assert.ThrowsException<ArgumentNullException>(() => 
 			_testDict.Add(new KeyValuePair<Person, City>(null, null)));
@@ -90,6 +91,36 @@ public class HashTableOpenAddressingTests
 
 		Assert.AreEqual(_testDict.Count, 0);
 	}
+
+	[TestMethod]
+	public void ADD_KV_NULL() => 
+		Assert.ThrowsException<ArgumentNullException>(() => _testDict.Add(null, null));
+
+	[TestMethod]
+	public void ADD_KV_SUCCESSFUL()
+	{
+		var addition = new KeyValuePair<Person, City>(new Person("asd", 33), new City("sss", 888));
+		_testDict.Add(addition.Key, addition.Value);
+		Assert.IsTrue(_testDict.Contains(addition));
+		Assert.IsTrue(_testDict.ContainsKey(addition.Key));
+	}
+
+	[TestMethod]
+	public void CONTAINS_KEY_SUCCESSFUL()
+	{
+		foreach (var td in _testData)
+		{
+			_testDict.Add(td);
+			_testDict.ContainsKey(td.Key);
+		}
+		foreach (var td in _testData) _testDict.ContainsKey(td.Key);
+	}
+
+	[TestMethod]
+	public void CONTAINS_KEY_NULL() => Assert.ThrowsException<ArgumentNullException>(() => _testDict.ContainsKey(null));
+
+	[TestMethod]
+	public void CONTAINS_KEY_NOT_EXISTING() => Assert.IsFalse(_testDict.ContainsKey(new Person("asd", 13)));
 
 }	
 	

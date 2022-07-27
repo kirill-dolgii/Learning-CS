@@ -11,6 +11,6 @@ public class HashTableLinearProbing<TKey, TValue> : HashTableOpenAddressingBase<
     public HashTableLinearProbing(HashFunction<TKey> hashFunc) : base(Enumerable.Empty<KeyValuePair<TKey, TValue>>(), 
 																	  hashFunc) {}
 
-	protected override int Probe(int index, int i) => (index + i) % this._capacity;
+	protected override int Probe(int index, int i) => (index + 1) % this._capacity;
 }
 
