@@ -16,19 +16,16 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 	private const double DEFAULT_LOAD_FACTOR = 0.75;
 	private const double RESIZE_SCALE        = 0.65;
 
-	private IEqualityComparer<TKey> keyCmp = EqualityComparer<TKey>.Default;
-	private IEqualityComparer<TValue> valCmp = EqualityComparer<TValue>.Default;
-
-	private TKey[]   _keys;
-	private TValue[] _values;
+	private readonly IEqualityComparer<TKey>   _keyCmp = EqualityComparer<TKey>.Default;
+	private readonly IEqualityComparer<TValue> _valCmp = EqualityComparer<TValue>.Default;
 
 	private KeyValuePairEntity?[] _entities;
 
-	private int _size;
+	private   int _size;
 	protected int _capacity;
 
-	private double             _loadFactor;
-	private HashFunction<TKey> _hf = new HashFunction<TKey>();
+	private readonly double             _loadFactor;
+	private readonly HashFunction<TKey> _hf;
 
 	private List<KeyValuePairEntity> _addedValues;
 
@@ -103,7 +100,9 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 	public void Clear()
 	{
-		throw new NotImplementedException();
+		_entities = new KeyValuePairEntity[_capacity];
+		_addedValues = new List<KeyValuePairEntity>(_capacity);
+		_size = 0;
 	}
 
 	private int FindEntityIndex(TKey key)
@@ -112,7 +111,7 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		if (_entities[index] == null) return -1;
 
 		for (int i = 0; _entities[index] != null && i <= _capacity; index = Probe(index, i++))
-			if (keyCmp.Equals(_entities[index]!.kv.Key, key))
+			if (_keyCmp.Equals(_entities[index]!.kv.Key, key))
 			{
 				if (!_entities[index]!.isDeleted) return index;
 				return -1;
@@ -125,10 +124,12 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 	public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
 	{
-		throw new NotImplementedException();
+		if (array == null) throw new ArgumentNullException("array");
+		if (arrayIndex < 0) throw new ArgumentException("arrayIndex");
+		_addedValues.Where(ent => !ent.isDeleted).Select(ent => ent.kv).ToArray().CopyTo(array, arrayIndex);
 	}
 
-    public bool Remove(KeyValuePair<TKey, TValue> item) => Remove(item.Key);
+	public bool Remove(KeyValuePair<TKey, TValue> item) => Remove(item.Key);
 
 	public int  Count      { get => _size; }
 	public bool IsReadOnly { get => false; }
@@ -180,6 +181,7 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		}
 		set
 		{
+			if (key == null) throw new ArgumentNullException($"{nameof(key)} was null");
 			int index = FindEntityIndex(key);
 			if (index == -1) throw new KeyNotFoundException($"{nameof(key)} is not presented in the hash table.");
 			_entities[index]!.kv = new KeyValuePair<TKey, TValue>(key, value);

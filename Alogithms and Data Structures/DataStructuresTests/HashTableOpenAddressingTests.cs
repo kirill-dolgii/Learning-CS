@@ -170,5 +170,23 @@ public class HashTableOpenAddressingTests
 		for (int i = 0; i < newValues.Count; i++) _testDict[tdata[i].Key] = newValues[i];
 		for (int i = 0; i < newValues.Count; i++) Assert.AreEqual(_testDict[tdata[i].Key], newValues[i]);
 	}
+
+	[TestMethod]
+	public void SET_VALUE_NULL()
+	{
+		foreach (var td in _testData.Take(5)) _testDict.Add(td);
+		Assert.ThrowsException<ArgumentNullException>(() => _testDict[null] = new City("asd", 455));
+	}
+
+	[TestMethod]
+	public void COPY_TO_SUCCESSFUL()
+	{
+		var emptyArray = new KeyValuePair<Person, City>[_testData.Count()];
+		foreach (var td in _testData) _testDict.Add(td);
+
+		_testDict.CopyTo(emptyArray, 0);
+
+		foreach (var kv in emptyArray) Assert.AreEqual(_testDict[kv.Key], kv.Value);
+	}
 }	
 	
