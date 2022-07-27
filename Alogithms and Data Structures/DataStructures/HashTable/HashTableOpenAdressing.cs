@@ -28,7 +28,7 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 	protected int _capacity;
 
 	private double             _loadFactor;
-	private HashFunction<TKey> _hf;
+	private HashFunction<TKey> _hf = new HashFunction<TKey>();
 
 	private List<KeyValuePairEntity> _addedValues;
 
@@ -149,7 +149,10 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 	public bool IsReadOnly { get => false; }
 	public void Add(TKey key, TValue value)
 	{
-		throw new NotImplementedException();
+		if (this.ContainsKey(key)) 
+			throw new NotSupportedException($"{nameof(key)} is already presented in the hash table");
+
+		this.Add(new KeyValuePair<TKey, TValue>(key, value));
 	}
 
 	public bool ContainsKey(TKey key)
