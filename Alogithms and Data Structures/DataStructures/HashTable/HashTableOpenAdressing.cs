@@ -181,8 +181,8 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		set => throw new NotImplementedException();
 	}
 
-	public ICollection<TKey>   Keys   { get; }
-	public ICollection<TValue> Values { get; }
+	public ICollection<TKey> Keys => _addedValues.Where(ent => !ent.isDeleted).Select(ent => ent.kv.Key).ToList();
+	public ICollection<TValue> Values => _addedValues.Where(ent => !ent.isDeleted).Select(ent => ent.kv.Value).ToList();
 
 	public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
 	{
