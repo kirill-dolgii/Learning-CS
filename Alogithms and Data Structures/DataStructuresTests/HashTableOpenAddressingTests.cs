@@ -188,5 +188,29 @@ public class HashTableOpenAddressingTests
 
 		foreach (var kv in emptyArray) Assert.AreEqual(_testDict[kv.Key], kv.Value);
 	}
+
+	[TestMethod]
+	public void ENUMERATION()
+	{
+		foreach (var kv in _testData) _testDict.Add(kv);
+		Assert.IsTrue(_testData.SequenceEqual(_testDict));
+	}
+
+	[TestMethod]
+	public void ENUMERATION_AFTER_REMOVAL()
+	{
+		var rand = new Random(22);
+		int size = 55;
+
+		var init    = _testData.ToList();
+		var removed = Enumerable.Range(0, size).Select(i => init[i]).ToList();
+
+		init = init.Except(removed).ToList();
+
+		foreach (var kv in _testData) _testDict.Add(kv);
+		foreach (var kv in removed) _testDict.Remove(kv);
+
+		Assert.IsTrue(init.SequenceEqual(_testDict));
+	}
 }	
 	
