@@ -106,19 +106,22 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		throw new NotImplementedException();
 	}
 
-	public bool Contains(KeyValuePair<TKey, TValue> item)
+	private int FindEntityIndex(TKey key)
 	{
-		if (item.Key == null) throw new ArgumentException($"{nameof(item.Key)} was null.");
-		int index = AdjustedHash(item.Key);
+		int index = AdjustedHash(key);
+		if (_entities[index] == null) return -1;
 
-		if (_entities[index] == null || _entities[index]!.isDeleted) return false;
+		for (int i = 0; _entities[index] != null && i <= _capacity; index = Probe(index, i++))
+			if (keyCmp.Equals(_entities[index]!.kv.Key, key))
+			{
+				if (!_entities[index]!.isDeleted) return index;
+				return -1;
+			}
 
-		for (int i = 0; _entities[index] != null && !_entities[index]!.isDeleted && i <= _capacity; index = Probe(index, i++))
-			if (valCmp.Equals(_entities[index]!.kv.Value, item.Value))
-				return true;
-
-		return false;
+		return -1;
 	}
+
+	public bool Contains(KeyValuePair<TKey, TValue> item) => ContainsKey(item.Key);
 
 	public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
 	{
@@ -158,12 +161,8 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 	public bool ContainsKey(TKey key)
 	{
 		if (key == null) throw new ArgumentNullException($"{nameof(key)} was null.");
-		int index = AdjustedHash(key);
-		for (int i = 0; _entities[index] != null && i <= _capacity && !_entities[index]!.isDeleted; index = Probe(index, i++))
-			if (EqualityComparer<TKey>.Default.Equals(key, _entities[index]!.kv.Key))
-				return true;
-
-		return false;
+		int index = FindEntityIndex(key);
+		return index != -1;
 	}
 
 	public bool Remove(TKey key)
