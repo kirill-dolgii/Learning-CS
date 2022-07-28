@@ -108,10 +108,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 	public int  Count      => _size;
 	public bool IsReadOnly => false;
-	public void Add(TKey key, TValue value)
-	{
-		throw new NotImplementedException();
-	}
+	public void Add(TKey key, TValue value) => Add(new KeyValuePair<TKey, TValue>(key, value));
 
 	public bool ContainsKey(TKey key) => Contains(new KeyValuePair<TKey, TValue>(key, default(TValue)));
 
@@ -153,7 +150,13 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 			if (node == null) throw new KeyNotFoundException($"{nameof(key)} is not presented in the hash table.");
 			return node.Value.Kv.Value;
 		}
-		set => Add(new KeyValuePair<TKey, TValue>(key, value));
+		set
+		{
+			if (key == null) throw new ArgumentNullException(nameof(key));
+			var node = BucketFindNode(key);
+			if (node == null) throw new KeyNotFoundException($"{nameof(key)} is not presented in the hash table.");
+			node.Value = new KeyValuePairEntity(new KeyValuePair<TKey, TValue>(key, value), false);
+		}
 	}
 	
 	public ICollection<TKey> Keys => _buckets.Where(b => b != null).SelectMany(b => b.ToArray()).Select(kv => kv.Kv.Key).ToList();
