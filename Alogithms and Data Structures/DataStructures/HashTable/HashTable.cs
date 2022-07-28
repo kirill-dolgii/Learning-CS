@@ -9,6 +9,8 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 	private const double DEFAULT_LOAD_FACTOR = 0.75;
 	private const double RESIZE_SCALE        = 0.65;
 
+	private readonly IEqualityComparer<TKey> _keyComp = EqualityComparer<TKey>.Default;
+
 	private LinkedList<KeyValuePair<TKey, TValue>>[] _buckets;
 	private int                  _size;
 	private int                  _capacity;
@@ -42,6 +44,8 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 	public HashTable(IEnumerable<KeyValuePair<TKey, TValue>> data, 
 					 HashFunction<TKey> hf) : this (data, data.Count(), DEFAULT_LOAD_FACTOR, hf) {}
+
+	private int AdjustedHash(TKey key) => (int)(_hashFunc.GetHash(key) % _capacity);
 
 	private int AdjustIndex(int hash) => hash % _capacity;
 
@@ -81,13 +85,18 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		Resize();
 	}
 
-	public bool Contains(KeyValuePair<TKey, TValue> item)
+	private int FindBucketIndex(TKey key)
 	{
-		if (_size == 0) return false;
-		int hash = _hashFunc.GetHash(item.Key);
-		int bucketIndex = AdjustIndex(hash);
-		return _buckets[bucketIndex].Contains(item);
-	}
+		if (key == null) throw new ArgumentNullException(nameof(key));
+		int index = AdjustedHash(key);
+		if (_buckets[index] == null || _buckets[index].First == null) return -1;
+		var head = _buckets[index].First;
+		for (int i = 0; !_keyComp.Equals(head!.Value.Key, key); head = head.Next) 
+			if (head.Next == null) return -1;
+		return index;
+	} 
+
+	public bool Contains(KeyValuePair<TKey, TValue> item) => FindBucketIndex(item.Key) != -1;
 
 	public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) 
 		=> _buckets.Where(b => b != null).SelectMany(b => b).ToArray().CopyTo(array, arrayIndex);
@@ -101,17 +110,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		throw new NotImplementedException();
 	}
 
-	public bool ContainsKey(TKey key)
-	{
-		if (key == null) throw new ArgumentNullException(nameof(key));
-
-		int hash = _hashFunc.GetHash(key);
-		int adjustedIndex = AdjustIndex(hash);
-
-		var list = _buckets[adjustedIndex];
-		if (list == null) return false;
-		return BucketFindKey(list, key) != null;
-	}
+	public bool ContainsKey(TKey key) => Contains(new KeyValuePair<TKey, TValue>(key, default(TValue)));
 
 	public bool Remove(TKey key)
 	{
