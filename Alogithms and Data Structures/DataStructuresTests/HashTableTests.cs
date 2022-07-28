@@ -60,6 +60,11 @@ public class HashTableTests
 	}
 
 	[TestMethod]
+
+	public void ADD_DUPLICATE_KEY() => 
+		Assert.ThrowsException<NotSupportedException>(() => _ht.Add(_testData.First()));
+
+	[TestMethod]
 	public void CLEAR()
 	{
 		_ht.Clear();

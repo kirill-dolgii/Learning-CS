@@ -52,6 +52,9 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 	public void Add(KeyValuePair<TKey, TValue> item)
 	{
 		if (item.Key == null) throw new ArgumentNullException(nameof(item.Key));
+		if (ContainsKey(item.Key))
+			throw new NotSupportedException($"{nameof(item.Key)} key is already presented in the hash table.");
+
 		Resize();
 		
 		int hash = _hashFunc.GetHash(item.Key);
