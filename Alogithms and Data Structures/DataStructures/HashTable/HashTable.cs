@@ -64,7 +64,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		if (ContainsKey(item.Key))
 			throw new NotSupportedException($"{nameof(item.Key)} key is already presented in the hash table.");
 
-		Resize();
+		if (this._size > _capacity * _loadFactor) Resize((int)(_capacity / _loadFactor / RESIZE_SCALE));
 		int index = AdjustedHash(item.Key);
 
 		_buckets[index] ??= new();
@@ -73,14 +73,10 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		_size++;
 	}
 
-	private void Resize()
+	private void Resize(int newCapacity)
 	{
-		if (_size <= _capacity * _loadFactor && _size <= _capacity * Math.Pow(_loadFactor, 2)) return;
-
-		var tmp = _buckets.Where(b => b != null).SelectMany(b => b.Select(ent => ent.Kv)).ToArray();
-
-		if (_capacity >= _capacity * _loadFactor) _capacity = (int)(_capacity / _loadFactor / RESIZE_SCALE);
-		if (_capacity <= _capacity * _loadFactor * RESIZE_SCALE) _capacity = (int)(_capacity * _loadFactor);
+		var tmp = _buckets.Where(b => b != null).SelectMany(b => b.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv)).ToArray();
+		_capacity = newCapacity;
 
 		_buckets = new LinkedList<KeyValuePairEntity>[_capacity];
 		_size = 0;
@@ -92,7 +88,6 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 	{
 		_size = 0;
 		_buckets = new LinkedList<KeyValuePairEntity>[_capacity];
-		Resize();
 	}
 
 	private int FindBucketIndex(TKey key)
@@ -136,6 +131,8 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		if (node == null) return false;
 
 		_size--;
+
+		if (_size <= _capacity * _loadFactor * 0.5) Resize((int)(_capacity / _loadFactor / 0.5));
 
 		list.Remove(node);
 		return true;
