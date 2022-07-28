@@ -20,9 +20,9 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 	private readonly IEqualityComparer<TKey> _keyComp = EqualityComparer<TKey>.Default;
 
-	private LinkedList<KeyValuePairEntity>[] _buckets;
-	private int                                            _size;
-	private int                                            _capacity;
+	private LinkedList<KeyValuePairEntity>?[] _buckets;
+	private int                               _size;
+	private int                               _capacity;
 
 	private readonly double              _loadFactor;
 	private readonly HashFunction<TKey> _hashFunc;
@@ -55,27 +55,25 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 					 HashFunction<TKey> hf) : this (data, data.Count(), DEFAULT_LOAD_FACTOR, hf) {}
 
 	private int AdjustedHash(TKey key) => (int)(_hashFunc.GetHash(key) % _capacity);
-
-	private int AdjustIndex(int hash) => hash % _capacity;
-
+	
 	public void Add(KeyValuePair<TKey, TValue> item)
 	{
 		if (item.Key == null) throw new ArgumentNullException(nameof(item.Key));
 		if (ContainsKey(item.Key))
 			throw new NotSupportedException($"{nameof(item.Key)} key is already presented in the hash table.");
 
-		if (this._size > _capacity * _loadFactor) Resize((int)(_capacity / _loadFactor / RESIZE_SCALE));
+		if (this._size >= _capacity * _loadFactor) Resize((int)(_capacity / _loadFactor / RESIZE_SCALE));
 		int index = AdjustedHash(item.Key);
 
 		_buckets[index] ??= new();
-		_buckets[index].AddLast(new KeyValuePairEntity(item, false));
+		_buckets[index]!.AddLast(new KeyValuePairEntity(item, false));
 
 		_size++;
 	}
 
 	private void Resize(int newCapacity)
 	{
-		var tmp = _buckets.Where(b => b != null).SelectMany(b => b.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv)).ToArray();
+		var tmp = _buckets.Where(b => b != null!).SelectMany(b => b.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv)).ToArray();
 		_capacity = newCapacity;
 
 		_buckets = new LinkedList<KeyValuePairEntity>[_capacity];
@@ -90,18 +88,18 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		_buckets = new LinkedList<KeyValuePairEntity>[_capacity];
 	}
 
-	private int FindBucketIndex(TKey key)
+	private LinkedListNode<KeyValuePairEntity>? BucketFindNode(TKey key)
 	{
 		if (key == null) throw new ArgumentNullException(nameof(key));
 		int index = AdjustedHash(key);
-		if (_buckets[index] == null || _buckets[index].First == null) return -1;
-		var head = _buckets[index].First;
+		if (_buckets[index] == null || _buckets[index]!.First == null) return null;
+		var head = _buckets[index]!.First;
 		for (int i = 0; !_keyComp.Equals(head!.Value.Kv.Key, key); head = head.Next) 
-			if (head.Next == null) return -1;
-		return index;
-	} 
+			if (head.Next == null) return null;
+		return head;
+	}
 
-	public bool Contains(KeyValuePair<TKey, TValue> item) => FindBucketIndex(item.Key) != -1;
+	public bool Contains(KeyValuePair<TKey, TValue> item) => BucketFindNode(item.Key) != null;
 
 	public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) 
 		=> _buckets.Where(b => b != null).SelectMany(b => b).ToArray().CopyTo(array, arrayIndex);
@@ -120,21 +118,12 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 	public bool Remove(TKey key)
 	{
 		if (key == null) throw new ArgumentNullException(nameof(key));
-
-		int hash          = _hashFunc.GetHash(key);
-		int adjustedIndex = AdjustIndex(hash);
-
-		var list          = _buckets[adjustedIndex];
-		if (list == null) return false;
-
-		var node          = BucketFindKey(list, key);
+		var node = BucketFindNode(key);
 		if (node == null) return false;
-
+        node.Value.Delete();
+		node.List!.Remove(node);
 		_size--;
-
-		if (_size <= _capacity * _loadFactor * 0.5) Resize((int)(_capacity / _loadFactor / 0.5));
-
-		list.Remove(node);
+		if (_size <= _capacity * _loadFactor * 0.4) Resize((int)(_capacity / _loadFactor * 0.5));
 		return true;
 	}
 	
@@ -160,16 +149,9 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		get
 		{
 			if (key == null) throw new ArgumentNullException(nameof(key));
-
-			int hash = _hashFunc.GetHash(key);
-			int adjustedHash = AdjustIndex(hash);
-
-			if (_buckets[adjustedHash] == null) throw new KeyNotFoundException(nameof(key));
-
-			var ret = _buckets[adjustedHash].FirstOrDefault(node => EqualityComparer<TKey>.Default.Equals(node.Kv.Key, key)).Kv.Value;
-			if (EqualityComparer<TValue>.Default.Equals(ret, default(TValue))) throw new KeyNotFoundException(nameof(key));
-
-			return ret;
+			var node = BucketFindNode(key);
+			if (node == null) throw new KeyNotFoundException($"{nameof(key)} is not presented in the hash table.");
+			return node.Value.Kv.Value;
 		}
 		set => Add(new KeyValuePair<TKey, TValue>(key, value));
 	}
