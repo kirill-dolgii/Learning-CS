@@ -57,6 +57,12 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 	public HashTable(IEnumerable<KeyValuePair<TKey, TValue>> data, 
 					 HashFunction<TKey> hf) : this (data, data.Count(), DEFAULT_LOAD_FACTOR, hf) {}
 
+	public static HashTable<TKey, TValue> Create(IEnumerable<KeyValuePair<TKey, TValue>> kvs,
+												 int initialCapacity,
+												 double loadFactor,
+												 HashFunction<TKey> hashFunc) 
+										  => new(kvs, initialCapacity, loadFactor, hashFunc);
+
 	private int AdjustedHash(TKey key) => (int)(_hashFunc.GetHash(key) % _capacity);
 	
 	public void Add(KeyValuePair<TKey, TValue> item)
