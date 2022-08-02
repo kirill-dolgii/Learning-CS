@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections;
 using System.Linq;
 
 namespace DataStructuresTests;
@@ -37,8 +36,8 @@ public class TestHelperIDictionary
 	public static void ADD_DUPLICATE_KEY<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> testData,
 													   IDictionary<TKey, TValue> testingDict)
 	{
-		testingDict.Add(testData.First());
-		Assert.ThrowsException<NotSupportedException>(() => testingDict.Add(testData.First()));
+        testingDict.Add(testData.First());
+        Assert.ThrowsException<NotSupportedException>(() => testingDict.Add(testData.First()));
 	}
 
 	public static void ADD_NULL<TKey, TValue>(IDictionary<TKey, TValue> testingDict)
@@ -79,106 +78,108 @@ public class TestHelperIDictionary
     where TKey : class =>
 		Assert.ThrowsException<ArgumentNullException>(() => testingDict.Add(null, default(TValue)));
 
-	//public void ADD_KV_SUCCESSFUL()
-    //{
-    //	var addition = new KeyValuePair<Person, City>(new Person("asd", 33), new City("sss", 888));
-    //	_testDict.Add(addition.Key, addition.Value);
-    //	Assert.IsTrue(_testDict.Contains(addition));
-    //	Assert.IsTrue(_testDict.ContainsKey(addition.Key));
-    //}
+    public static void ADD_KV_SUCCESSFUL<TKey, TValue>(KeyValuePair<TKey, TValue> kv,
+													   IDictionary<TKey, TValue> testingDict)
+	{
+		testingDict.Add(kv);
+		Assert.IsTrue(testingDict.Contains(kv));
+        Assert.IsTrue(testingDict.Remove(kv));
+	}
 
-    //public void CONTAINS_KEY_SUCCESSFUL()
-    //{
-    //	foreach (var td in _testData)
-    //	{
-    //		_testDict.Add(td);
-    //		_testDict.ContainsKey(td.Key);
-    //	}
-    //	foreach (var td in _testData) _testDict.ContainsKey(td.Key);
-    //}
+    public static void CONTAINS_KEY_SUCCESSFUL<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> testData,
+															 IDictionary<TKey, TValue> testingDict,
+															 IDictionary<TKey, TValue> sampleDict)
+    {
+        foreach (var kv in testData)
+        {
+            testingDict.Add(kv);
+            sampleDict.Add(kv);
+			Assert.AreEqual(testingDict.ContainsKey(kv.Key), sampleDict.ContainsKey(kv.Key));
+		}
+        foreach (var kv in testData) 
+			Assert.AreEqual(testingDict.ContainsKey(kv.Key), sampleDict.ContainsKey(kv.Key));
 
-    //public void CONTAINS_KEY_NULL() => Assert.ThrowsException<ArgumentNullException>(() => _testDict.ContainsKey(null));
+		Assert.AreEqual(testingDict.Count, sampleDict.Count);
+	}
 
-    //public void CONTAINS_KEY_NOT_EXISTING() => Assert.IsFalse(_testDict.ContainsKey(new Person("asd", 13)));
+    public static void CONTAINS_KEY_NULL<TKey, TValue>(IDictionary<TKey, TValue> testingDict)
+    where TKey : class
+		=> Assert.ThrowsException<ArgumentNullException>(() => testingDict.ContainsKey(null));
 
-    //public void REMOVE_KEY_SUCCESSFUL()
-    //{
-    //	foreach (var td in _testData.Take(5)) _testDict.Add(td);
-    //	foreach (var td in _testData.Take(5)) Assert.IsTrue(_testDict.Remove(td.Key));
-    //       foreach (KeyValuePair<Person, City> td in _testData) Assert.IsFalse(_testDict.ContainsKey(td.Key));
-    //	Assert.AreEqual(0, _testDict.Count);
-    //}
+    public static void CONTAINS_KEY_NOT_EXISTING<TKey, TValue>(IDictionary<TKey, TValue> testingDict, 
+															   KeyValuePair<TKey, TValue> abcentKv) 
+		=> Assert.IsFalse(testingDict.ContainsKey(abcentKv.Key));
 
-    //public void REMOVE_KEY_NULL() => Assert.ThrowsException<ArgumentNullException>(() => _testDict.Remove(null));
+    public static void REMOVE_KEY_SUCCESSFUL<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> testData,
+														   IDictionary<TKey, TValue> testingDict)
+    {
+        foreach (var td in testData.Take(5)) testingDict.Add(td);
+        foreach (var td in testData.Take(5)) Assert.IsTrue(testingDict.Remove(td.Key));
+        foreach (KeyValuePair<TKey, TValue> td in testData) Assert.IsFalse(testingDict.ContainsKey(td.Key));
+        Assert.AreEqual(0, testingDict.Count);
+    }
 
-    //public void REMOVE_KEY_NOT_EXISTING()
-    //{
-    //	foreach (var td in _testData) _testDict.Add(td);
-    //	Assert.IsFalse(_testDict.Remove(new Person("---aaa222", 12)));
-    //}
+    public static void REMOVE_KEY_NULL<TKey, TValue>(IDictionary<TKey, TValue> testingDict)
+    where TKey : class
+		=> Assert.ThrowsException<ArgumentNullException>(() => testingDict.Remove(null));
 
-    //public void GET_VALUE_OPERATOR_SUCCESSFUL()
-    //{
-    //	foreach (var td in _testData) _testDict.Add(td);
-    //	foreach (var td in _testData)
-    //	{
-    //		var valFromDict = _testDict[td.Key];
-    //		Assert.AreEqual(valFromDict.Name, td.Value.Name);
-    //		Assert.AreEqual(valFromDict.Population, td.Value.Population);
-    //	}
-    //}
+    public static void REMOVE_KEY_NOT_EXISTING<TKey, TValue>(IDictionary<TKey, TValue> testingDict, 
+															 KeyValuePair<TKey, TValue> nonExistingKv) 
+		=> Assert.IsFalse(testingDict.Remove(nonExistingKv.Key));
 
-    //public void GET_VALUE_OPERATOR_NOT_EXISTING() => 
-    //	Assert.ThrowsException<KeyNotFoundException>(() => _testDict[new Person("asd", 3222)]);
+    public static void GET_VALUE_OPERATOR_SUCCESSFUL<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> testData,
+																   IDictionary<TKey, TValue> testingDict)
+    {
+        foreach (var kv in testData)
+        {
+            var valFromDict = testingDict[kv.Key];
+            Assert.IsTrue(EqualityComparer<TValue>.Default.Equals(valFromDict, kv.Value));
+        }
+    }
 
-    //public void SET_VALUE_SUCCESSFUL()
-    //{
-    //	var rand = new Random(323);
-    //	foreach (var td in _testData) _testDict.Add(td);
+    public static void GET_VALUE_OPERATOR_NOT_EXISTING<TKey, TValue>(IDictionary<TKey, TValue> testingDict,
+															  KeyValuePair<TKey, TValue> nonExistingKv) 
+		=> Assert.ThrowsException<KeyNotFoundException>(() => testingDict[nonExistingKv.Key]);
 
-    //	var newValues = Enumerable.Range(0, _testDict.Count)
-    //							.Select(i => new City(RandomString(10, rand), rand.Next(500))).ToList();
-    //	var tdata = _testData.ToList();
+    public static void SET_VALUE_SUCCESSFUL<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> testData,
+														  IDictionary<TKey, TValue> testingDict)
+    {
+		foreach (var kv in testData) testingDict[kv.Key] = kv.Value;
+		foreach (var kv in testData) Assert.AreEqual(testingDict[kv.Key], kv.Value);
+    }
 
-    //	for (int i = 0; i < newValues.Count; i++) _testDict[tdata[i].Key] = newValues[i];
-    //	for (int i = 0; i < newValues.Count; i++) Assert.AreEqual(_testDict[tdata[i].Key], newValues[i]);
-    //}
+    public static void SET_VALUE_NULL<TKey, TValue>(IDictionary<TKey, TValue> testingDict)
+    where TKey : class =>
+		Assert.ThrowsException<ArgumentNullException>(() => testingDict[null] = default(TValue));
 
-    //public void SET_VALUE_NULL()
-    //{
-    //	foreach (var td in _testData.Take(5)) _testDict.Add(td);
-    //	Assert.ThrowsException<ArgumentNullException>(() => _testDict[null] = new City("asd", 455));
-    //}
+    public static void COPY_TO_SUCCESSFUL<TKey, TValue>(IDictionary<TKey, TValue> testingDict)
+    {
+        var emptyArray = new KeyValuePair<TKey, TValue>[testingDict.Count];
+		testingDict.CopyTo(emptyArray, 0);
+		foreach (var kv in emptyArray) Assert.AreEqual(testingDict[kv.Key], kv.Value);
+    }
 
-    //public void COPY_TO_SUCCESSFUL()
-    //{
-    //	var emptyArray = new KeyValuePair<Person, City>[_testData.Count()];
-    //	foreach (var td in _testData) _testDict.Add(td);
+    public static void ENUMERATION_SUCCESSFUL<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> testData,
+															IDictionary<TKey, TValue> testingDict)
+    {
+    	foreach (var kv in testData) testingDict.Add(kv);
+    	Assert.IsTrue(testData.SequenceEqual(testingDict));
+    }
 
-    //	_testDict.CopyTo(emptyArray, 0);
+    public static void ENUMERATION_AFTER_REMOVAL<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> testData,
+														IDictionary<TKey, TValue> testingDict)
+    {
+        var rand = new Random(22);
+        int size = testData.Count() / 2;
 
-    //	foreach (var kv in emptyArray) Assert.AreEqual(_testDict[kv.Key], kv.Value);
-    //}
+        var init    = testData.ToList();
+        var removed = Enumerable.Range(0, size).Select(i => init[i]).ToList();
 
-    //public void ENUMERATION()
-    //{
-    //	foreach (var kv in _testData) _testDict.Add(kv);
-    //	Assert.IsTrue(_testData.SequenceEqual(_testDict));
-    //}
+        init = init.Except(removed).ToList();
 
-    //public void ENUMERATION_AFTER_REMOVAL()
-    //{
-    //	var rand = new Random(22);
-    //	int size = 55;
+        foreach (var kv in testData) testingDict.Add(kv);
+        foreach (var kv in removed) testingDict.Remove(kv);
 
-    //	var init    = _testData.ToList();
-    //	var removed = Enumerable.Range(0, size).Select(i => init[i]).ToList();
-
-    //	init = init.Except(removed).ToList();
-
-    //	foreach (var kv in _testData) _testDict.Add(kv);
-    //	foreach (var kv in removed) _testDict.Remove(kv);
-
-    //	Assert.IsTrue(init.SequenceEqual(_testDict));
-    //}
+        Assert.IsTrue(init.SequenceEqual(testingDict));
+    }
 }
