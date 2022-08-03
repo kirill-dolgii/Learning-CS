@@ -1,7 +1,7 @@
 ﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DataStructures.HashTable;
 
 namespace DataStructuresTests;
@@ -11,7 +11,12 @@ public class HashTableTests
 {
 	private record Person(string Name, int Age);
 
-	private record Country(string Name, int Population);
+	private record City(string Name, int Population);
+
+	private IEnumerable<KeyValuePair<Person, City>> _testData;
+
+	private HashFunction<Person> _hf   = new((pers) => pers.Age * pers.Name.Length * 300000);
+	private Random               _rand = new Random(222);
 
 	private string RandomString(int length, Random random)
 	{
@@ -20,140 +25,233 @@ public class HashTableTests
 									.Select(s => s[random.Next(s.Length)]).ToArray());
 	}
 
-	private KeyValuePair<Person, Country>[] _testData;
+	private IEnumerable<KeyValuePair<Person, City>> GenerateTestData(Random rand, int size)
+	{
+		return Enumerable.Range(0, size).Select(i => new KeyValuePair<Person, City>(
+													new Person(RandomString(rand.Next(8, 10), rand), rand.Next(50)),
+													new City(RandomString(rand.Next(8, 10), rand), rand.Next(50))));
+	}
 
-	private HashFunction<Person> _hf;
+	private HashTable<Person, City>              _htSepCh;
+	private HashTableLinearProbing<Person, City> _htLinPr;
 
-	private HashTable<Person, Country> _ht;
-
-	private Dictionary<Person, Country> _expHt;
 
 	[TestInitialize]
 	public void Initialize()
 	{
-		_hf = new HashFunction<Person>(person => Math.Abs(person.Name.GetHashCode() * person.Age));
-		_ht = new HashTable<Person, Country>(_hf);
-
-		_expHt = new();
-
-		var rand = new Random(323);
-		_testData = Enumerable.Range(0, 50).
-							   Select(i => new KeyValuePair<Person, Country>(new(RandomString(rand.Next(3, 20), rand),
-																				 rand.Next(10, 80)),
-																			 new(RandomString(rand.Next(3, 20), rand),
-																				 rand.Next(10, 3000000)))).ToArray();
-		foreach (var td in _testData)
-		{
-			_ht.Add(td);
-			_expHt.Add(td.Key, td.Value);
-		}
+		_testData = GenerateTestData(_rand, 100).ToArray();
+		_htSepCh = new(_testData, _hf);
+		_htLinPr = new(_testData, _hf);
 	}
 
 	[TestMethod]
-	public void ADD_SUCCESSFULLY()
+	public void CONSTRUCTION_FROM_ENUMERABLE()
 	{
-		foreach (var td in _testData)
-		{
-			Assert.IsTrue(_ht.Contains(td));
-			Assert.AreEqual(_ht[td.Key], td.Value);
-		}
+		TestHelperIDictionary.CONSTRUCTION_FROM_ENUMERABLE(Enumerable.Empty<KeyValuePair<Person, City>>(),
+														   _htLinPr,
+														   new Dictionary<Person, City>(_testData));
+
+		TestHelperIDictionary.CONSTRUCTION_FROM_ENUMERABLE(Enumerable.Empty<KeyValuePair<Person, City>>(),
+														   _htSepCh,
+														   new Dictionary<Person, City>(_testData));
 	}
 
 	[TestMethod]
-	public void CLEAR()
+	public void CONSTRUCTION_BY_ADDING()
 	{
-		_ht.Clear();
-		foreach (var td in _testData) Assert.IsFalse(_ht.Contains(td));
-		Assert.AreEqual(_ht.Count, 0);
+		_htLinPr  = new HashTableLinearProbing<Person, City>(_hf);
+		_htSepCh  = new HashTable<Person, City>(_hf);
+
+		TestHelperIDictionary.CONSTRUCTION_BY_ADDING(_testData,
+													 _htSepCh,
+													 new Dictionary<Person, City>());
+
+		TestHelperIDictionary.CONSTRUCTION_BY_ADDING(_testData,
+													 _htLinPr,
+													 new Dictionary<Person, City>());
 	}
 
 	[TestMethod]
-	public void ADD_CLEAR_ADD()
+	public void ADD_DUPLICATE_KEY()
 	{
-		_ht.Clear();
-		foreach (var td in _testData) _ht.Add(td);
-		foreach (var td in _testData) Assert.IsTrue(_ht.Contains(td));
-		Assert.AreEqual(_ht.Count, _testData.Count());
+        var sepCh = new HashTable<Person, City>(_hf);
+        var linPr = new HashTableLinearProbing<Person, City>(_hf);
+
+        TestHelperIDictionary.ADD_DUPLICATE_KEY(_testData, sepCh);
+		TestHelperIDictionary.ADD_DUPLICATE_KEY(_testData, linPr);
 	}
 
-	[TestMethod]	
-	public void REMOVE_SUCCESSFUL_KEY()
+	[TestMethod]
+	public void ADD_NULL()
 	{
-		Assert.IsTrue(_ht.Remove(_testData.First().Key));
-		Assert.IsFalse(_ht.Contains(_testData.First()));
-		Assert.AreEqual(_ht.Count, _testData.Count() - 1);
+		TestHelperIDictionary.ADD_NULL(_htSepCh);
+		TestHelperIDictionary.ADD_NULL(_htLinPr);
 	}
 
 	[TestMethod]
-	public void REMOVE_NOT_EXISTING_KEY() => Assert.IsFalse(_ht.Remove(new Person("nobody", 123)));
-
-	[TestMethod]
-	public void REMOVE_NULL_KEY() => Assert.ThrowsException<ArgumentNullException>(() => _ht.Remove(null));
-	
-	[TestMethod]
-	public void REMOVE_SUCCESSFUL_KV_PAIR()
+	public void REMOVE_NULL()
 	{
-		var toRemove = _testData.First();
-		Assert.IsTrue(_ht.Remove(toRemove));
-		Assert.IsFalse(_ht.Contains(toRemove));
+		TestHelperIDictionary.REMOVE_NULL(_htSepCh);
+		TestHelperIDictionary.REMOVE_NULL(_htLinPr);
 	}
 
 	[TestMethod]
-	public void REMOVE_NULL_KV_PAIR() =>
-		Assert.ThrowsException<ArgumentNullException>(() => _ht.Remove(new KeyValuePair<Person, Country>(null, null)));
-
-	[TestMethod]
-	public void TRY_GET_NOT_EXISTING_KEY() => Assert.IsFalse(_ht.TryGetValue(new Person("Vova", 34), out Country val));
-
-	[TestMethod]
-	public void TRY_GET_SUCCESSFUL()
+	public void REMOVE_ALL()
 	{
-		var     testKv = _testData.First();
+		var sepCh    = new HashTable<Person, City>(_hf);
+		var linPr    = new HashTableLinearProbing<Person, City>(_hf);
 
-		Assert.IsTrue(_ht.TryGetValue(testKv.Key, out var val));
-		Assert.AreEqual(testKv.Value, val);
-		_expHt.TryGetValue(testKv.Key, out var valExp);
-		Assert.AreEqual(valExp, val);
+		TestHelperIDictionary.REMOVE_ALL(_testData, linPr, new Dictionary<Person, City>());
+		TestHelperIDictionary.REMOVE_ALL(_testData, sepCh, new Dictionary<Person, City>());
 	}
 
 	[TestMethod]
-	public void SETTER_SUCCESSFUL()
+	public void ADD_NULL_KV()
 	{
-		var ht = new HashTable<Person, Country>(_hf);
-
-		foreach (var td in _testData) ht[td.Key] = td.Value;
-		foreach (var td in _testData)
-		{
-			Assert.IsTrue(ht.Contains(td));
-			Assert.IsTrue(_expHt[td.Key] == ht[td.Key]);
-			Assert.AreEqual(_expHt.Count, ht.Count);
-		}
+		TestHelperIDictionary.ADD_NULL_KV(_htLinPr);
+		TestHelperIDictionary.ADD_NULL_KV(_htSepCh);
 	}
 
 	[TestMethod]
-	public void SETTER_UNSUCCESSFUL() => Assert.ThrowsException<ArgumentNullException>(() => _ht[null] = null);
-
-	[TestMethod]
-	public void GETTER_UNSUCCESSFUL() => Assert.ThrowsException<KeyNotFoundException>(() => _ht[new Person("asd11", 222)]);
-
-	[TestMethod]
-	public void GETTER_NULL() => Assert.ThrowsException<ArgumentNullException>(() => _ht[null]);
-
-	[TestMethod]
-	public void KEYS_COLLECTION()
+	public void ADD_KV_SUCCESSFUL()
 	{
-		var keys = _ht.Keys;
-		Assert.AreEqual(keys.Count, _testData.Count());
-		Assert.IsTrue(keys.All(k => _expHt.ContainsKey(k)));
+		var sepCh = new HashTable<Person, City>(_hf);
+		var linPr = new HashTableLinearProbing<Person, City>(_hf);
+
+		var kv = GenerateTestData(_rand, 1).First();
+
+		TestHelperIDictionary.ADD_KV_SUCCESSFUL(kv, linPr);
+		TestHelperIDictionary.ADD_KV_SUCCESSFUL(kv, sepCh);
 	}
 
 	[TestMethod]
-	public void VALUES_COLLECTION()
+	public void CONTAINS_KEY_SUCCESSFUL()
 	{
-		var keys = _ht.Values;
-		Assert.AreEqual(keys.Count, _testData.Count());
-		Assert.IsTrue(keys.All(v => _expHt.ContainsValue(v)));
+		var sepCh = new HashTable<Person, City>(_hf);
+		var linPr = new HashTableLinearProbing<Person, City>(_hf);
+		
+		TestHelperIDictionary.CONTAINS_KEY_SUCCESSFUL(_testData, linPr, new Dictionary<Person, City>());
+		TestHelperIDictionary.CONTAINS_KEY_SUCCESSFUL(_testData, sepCh, new Dictionary<Person, City>());
 	}
 
+	[TestMethod]
+	public void CONTAINS_NULL_KEY()
+	{
+		TestHelperIDictionary.CONTAINS_KEY_NULL(_htSepCh);
+		TestHelperIDictionary.CONTAINS_KEY_NULL(_htLinPr);
+	}
+
+	[TestMethod]
+	public void CONTAINS_NOT_EXISTING_KV()
+	{
+		var sepCh = new HashTable<Person, City>(_hf);
+		var linPr = new HashTableLinearProbing<Person, City>(_hf);
+
+		TestHelperIDictionary.
+			CONTAINS_KEY_NOT_EXISTING(sepCh, new KeyValuePair<Person, City>(new Person("ds", 23), null));
+		TestHelperIDictionary.
+			CONTAINS_KEY_NOT_EXISTING(linPr, new KeyValuePair<Person, City>(new Person("ds", 23), null));
+	}
+
+	[TestMethod]
+	public void REMOVE_KEY_SUCCESSFUL()
+	{
+		var sepCh = new HashTable<Person, City>(_hf);
+		var linPr = new HashTableLinearProbing<Person, City>(_hf);
+
+		TestHelperIDictionary.REMOVE_KEY_SUCCESSFUL(_testData, linPr);
+		TestHelperIDictionary.REMOVE_KEY_SUCCESSFUL(_testData, sepCh);
+	}
+
+	[TestMethod]
+	public void REMOVE_KEY_NULL()
+	{
+		var sepCh = new HashTable<Person, City>(_hf);
+		var linPr = new HashTableLinearProbing<Person, City>(_hf);
+
+		TestHelperIDictionary.REMOVE_KEY_NULL(sepCh);
+		TestHelperIDictionary.REMOVE_KEY_NULL(linPr);
+
+	}
+
+	[TestMethod]
+	public void REMOVE_KEY_NOT_EXISTING()
+	{
+		var nonExisting = new KeyValuePair<Person, City>(new Person("asd", 223), new City("qq1", 22));
+
+		TestHelperIDictionary.REMOVE_KEY_NOT_EXISTING(_htLinPr, nonExisting);
+		TestHelperIDictionary.REMOVE_KEY_NOT_EXISTING(_htSepCh, nonExisting);
+	}
+
+	[TestMethod]
+	public void GET_VALUE_OPERATO_SUCCESSFUL()
+	{
+		TestHelperIDictionary.GET_VALUE_OPERATOR_SUCCESSFUL(_testData, _htLinPr);
+		TestHelperIDictionary.GET_VALUE_OPERATOR_SUCCESSFUL(_testData, _htSepCh);
+	}
+
+	[TestMethod]
+	public void GET_VALUE_OPERATOR_SUCCESSFUL()
+	{
+		var nonExistingKv = new KeyValuePair<Person, City>(new Person("asd", 2321), new City("11228", 72727));
+
+		TestHelperIDictionary.GET_VALUE_OPERATOR_NOT_EXISTING(_htLinPr, nonExistingKv);
+		TestHelperIDictionary.GET_VALUE_OPERATOR_NOT_EXISTING(_htSepCh, nonExistingKv);
+	}
+
+	[TestMethod]
+	public void SET_VALUE_SUCCESSFUL()
+	{
+		TestHelperIDictionary.SET_VALUE_SUCCESSFUL(_testData, _htLinPr);
+		TestHelperIDictionary.SET_VALUE_SUCCESSFUL(_testData, _htSepCh);
+	}
+
+	[TestMethod]
+	public void SET_VALUE_NULL()
+	{
+		TestHelperIDictionary.SET_VALUE_NULL(_htLinPr);
+		TestHelperIDictionary.SET_VALUE_NULL(_htSepCh);
+	}
+
+	[TestMethod]
+	public void COPY_TO_SUCCESSFUL()
+	{
+		TestHelperIDictionary.COPY_TO_SUCCESSFUL(_htLinPr);
+		TestHelperIDictionary.COPY_TO_SUCCESSFUL(_htSepCh);
+	}
+
+	[TestMethod]
+	public void ENUMERATION_SUCCESSFUL()
+	{
+		var htLinPr = new HashTableLinearProbing<Person, City>(_hf);
+		var htSepCh = new HashTable<Person, City>(_hf);
+
+		TestHelperIDictionary.ENUMERATION_SUCCESSFUL(_testData, htLinPr);
+		TestHelperIDictionary.ENUMERATION_SUCCESSFUL(_testData, htSepCh);
+	}
+
+	[TestMethod]
+	public void ENUMERATION_AFTER_REMOVAL()
+	{
+		var htLinPr = new HashTableLinearProbing<Person, City>(_hf);
+		var htSepCh = new HashTable<Person, City>(_hf);
+
+		TestHelperIDictionary.ENUMERATION_AFTER_REMOVAL(_testData, htLinPr);
+		TestHelperIDictionary.ENUMERATION_AFTER_REMOVAL(_testData, htSepCh);
+	}
+
+
+	[TestMethod]
+	public void COLLISIONS_COUNT()
+	{
+		var hf      = new HashFunction<Person>((pers) => pers.Name.Contains("asd") ? 10 : _hf.GetHash(pers));
+		var htSepCh = new HashTable<Person, City>(hf);
+
+		htSepCh.Add(new KeyValuePair<Person, City>(new Person("asd", 13), null));
+		htSepCh.Add(new KeyValuePair<Person, City>(new Person("asd1", 13), null));
+		Assert.AreEqual(htSepCh.CollisionsNumber, 1);
+
+		htSepCh.Remove(new Person("asd", 13));
+		Assert.AreEqual(htSepCh.CollisionsNumber, 0);
+	}
 }
-

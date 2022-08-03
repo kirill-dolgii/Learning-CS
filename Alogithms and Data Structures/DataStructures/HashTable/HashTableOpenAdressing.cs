@@ -29,9 +29,10 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 	private List<KeyValuePairEntity> _addedValues;
 
-	private HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data, 
-								       int initialCapacity, 
-								       double loadFactor, HashFunction<TKey> hf)
+	private protected HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data, 
+								        int initialCapacity, 
+								        double loadFactor, 
+										HashFunction<TKey> hf)
 	{
 		if (initialCapacity < 0) throw new ArgumentException(nameof(initialCapacity));
 		if (loadFactor <= 0 || loadFactor > 1) throw new ArgumentException(nameof(loadFactor));
