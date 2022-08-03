@@ -27,6 +27,8 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 	private readonly double              _loadFactor;
 	private readonly HashFunction<TKey> _hashFunc;
 
+	private int _collisionsNumber;
+
 	public HashTable(IEnumerable<KeyValuePair<TKey, TValue>> kvs,
 					 int initialCapacity, 
 					 double loadFactor, 
@@ -63,7 +65,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 												 HashFunction<TKey> hashFunc) 
 										  => new(kvs, initialCapacity, loadFactor, hashFunc);
 
-	private int AdjustedHash(TKey key) => (int)(_hashFunc.GetHash(key) % _capacity);
+	private int AdjustedHash(TKey key) => Math.Abs((int)(_hashFunc.GetHash(key) % _capacity));
 	
 	public void Add(KeyValuePair<TKey, TValue> item)
 	{
@@ -76,6 +78,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		_buckets[index] ??= new();
 		var entity = new KeyValuePairEntity(item, false);
 
+		if (_buckets[index]!.Count != 0) _collisionsNumber++;
 		_buckets[index]!.AddLast(entity);
 		_addedValues.Add(entity);
 
@@ -109,7 +112,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		int index = AdjustedHash(key);
 		if (_buckets[index] == null || _buckets[index]!.First == null) return null;
 		var head = _buckets[index]!.First;
-		for (int i = 0; !_keyComp.Equals(head!.Value.Kv.Key, key); head = head.Next) 
+		for (; !_keyComp.Equals(head!.Value.Kv.Key, key); head = head.Next) 
 			if (head.Next == null) return null;
 		return head;
 	}
@@ -121,17 +124,20 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 
 	public bool Remove(KeyValuePair<TKey, TValue> item) => Remove(item.Key);
 
+	public int CollisionsNumber => _collisionsNumber;
+
 	public int  Count      => _size;
 	public bool IsReadOnly => false;
 	public void Add(TKey key, TValue value) => Add(new KeyValuePair<TKey, TValue>(key, value));
 
-	public bool ContainsKey(TKey key) => Contains(new KeyValuePair<TKey, TValue>(key, default(TValue)));
+	public bool ContainsKey(TKey key) => Contains(new KeyValuePair<TKey, TValue>(key, default(TValue)!));
 
 	public bool Remove(TKey key)
 	{
 		if (key == null) throw new ArgumentNullException(nameof(key));
 		var node = BucketFindNode(key);
 		if (node == null) return false;
+		if (node.List!.Count > 1) _collisionsNumber--;
         node.Value.Delete();
 		node.List!.Remove(node);
 		node.Value.Delete();

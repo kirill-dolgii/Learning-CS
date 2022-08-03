@@ -239,4 +239,19 @@ public class HashTableTests
 		TestHelperIDictionary.ENUMERATION_AFTER_REMOVAL(_testData, htLinPr);
 		TestHelperIDictionary.ENUMERATION_AFTER_REMOVAL(_testData, htSepCh);
 	}
+
+
+	[TestMethod]
+	public void COLLISIONS_COUNT()
+	{
+		var hf      = new HashFunction<Person>((pers) => pers.Name.Contains("asd") ? 10 : _hf.GetHash(pers));
+		var htSepCh = new HashTable<Person, City>(hf);
+
+		htSepCh.Add(new KeyValuePair<Person, City>(new Person("asd", 13), null));
+		htSepCh.Add(new KeyValuePair<Person, City>(new Person("asd1", 13), null));
+		Assert.AreEqual(htSepCh.CollisionsNumber, 1);
+
+		htSepCh.Remove(new Person("asd", 13));
+		Assert.AreEqual(htSepCh.CollisionsNumber, 0);
+	}
 }
