@@ -17,10 +17,7 @@ where T : IComparable<T>
 		public SkipNode(int level)
 		{
 			this.value = default(T);
-
-			this.forward = new SkipNode[level];
-			
-			//for (int i = level - 1; i > 0; i--) this.forward[i]!.forward[i] = null;
+			this.forward = new SkipNode[level + 1];
 		}
 
 		public SkipNode(T item, int level) : this(level)
@@ -45,27 +42,23 @@ where T : IComparable<T>
 		this.maxLevel = initLevel;
 	}
 
-	private SkipNode _head;
+	private readonly SkipNode _head;
 
 	private int maxLevel;
 
-	private SkipNode? Find(T value, SkipNode startNode, int level)
+	private SkipNode[] FindPrecedingNodes(T value, SkipNode startNode, int level)
 	{
-		if (level < 0) return startNode;
 		if (startNode == null) throw new NullReferenceException();
-		if (this.Compare(value, startNode.value!) == 0) return startNode;
-		while (startNode.forward[level] != null && this.Compare(value, startNode.value!) > 0) 
-			startNode = startNode.forward[level];
+		var predecessors = new SkipNode[level + 1];
 
-		SkipNode? ret = this.Find(value, startNode, level - 1);
-
-		return ret ?? startNode;
-	}
-
-	public bool Find(T value)
-	{
-		SkipNode found = this.Find(value, this._head, this.maxLevel - 1);
-		return found != null;
+		for (int lvl = level; lvl >= 0; lvl--)
+		{
+			while (startNode!.forward[lvl] != null && 
+				   this.Compare(value, startNode.forward[lvl]!.value!) > 0)
+				startNode = startNode.forward[lvl]!;
+			predecessors[lvl] = startNode;
+		}
+		return predecessors;
 	}
 
 	public bool Add(T value)
@@ -73,20 +66,50 @@ where T : IComparable<T>
 		Random random   = new Random();
 		int    newLevel = 0;
 
-		for (int i = 0; random.Next() % 2 == 0; i++) newLevel++;
+		for (; newLevel < maxLevel && random.Next() % 2 == 0; newLevel++) {}
+		SkipNode newNode      = new(value, newLevel);
 
-		return this.Add(value, this._head, newLevel);
-	}
+		var      predecessors = FindPrecedingNodes(value, this._head, maxLevel);
 
-	private bool Add(T value, SkipNode startNode, int level)
-	{
-        SkipNode? found   = this.Find(value, startNode, level);
-		SkipNode  newNode = new(value, level);
-		for (int i = level; i > 0; i--) found.forward[i] = newNode.forward[i];
+		for (int lvl = newLevel; lvl >= 0; lvl--)
+		{
+			newNode.forward[lvl] = predecessors[lvl]!.forward[lvl];
+            predecessors[lvl]!.forward[lvl] = newNode;
+		}
 
 		return true;
-        //if (found != null && this.Compare(found.value!, value) == 0) return false;
-        throw new NotImplementedException();
+	}
+
+	public bool Remove(T value)
+	{
+		if (value == null) throw new ArgumentNullException($"{nameof(value)} was null");
+		var predecessors = FindPrecedingNodes(value, _head, maxLevel);
+		if (predecessors[0].forward[0] != null && predecessors[0].forward[0].value.CompareTo(value) != 0) return false;
+
+		for (int i = maxLevel; i >= 0; i--)
+			if (predecessors[i].forward[i] != null && predecessors[i].forward[i].value.CompareTo(value) == 0)
+				predecessors[i].forward[i] = predecessors[i].forward[i].forward[i];
+
+		return true;
+	}
+
+	public void Print()
+	{
+		var trav = _head;
+		for (int i = 0; i <= maxLevel; i++)
+		{
+			var sb = new StringBuilder();
+			while (trav!.forward[0] != null)
+			{
+				var app = i < trav.forward.Length && trav.forward[0] != null ? 
+							sb.Append($"---{trav.forward[0]!.value!.ToString()}") : 
+							sb.Append("---**");
+				trav = trav.forward[0];
+			}
+			Console.WriteLine(sb.ToString());
+			trav = _head;
+		}
+		
 	}
 
 	private int Compare(T value1, T value2)
