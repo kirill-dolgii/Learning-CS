@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 using System.Text;
-using System.Threading.Tasks;
-
-using System.Linq;
 
 namespace DataStructures;
 
@@ -15,20 +9,16 @@ public class SkipList<T> : ICollection<T>
 	{
 		public SkipNode(int level)
 		{
-			this.value = default(T);
-			this.forward = new SkipNode[level + 1];
+			this.Value = default;
+			this.Forward = new SkipNode[level + 1];
 		}
 
-		public SkipNode(T item, int level) : this(level)
-		{
-			this.value = item;
-		}
+		public SkipNode(T item, int level) : this(level) => this.Value = item;
 
-		public T?          value;
-		public SkipNode?[] forward;
+		public T?          Value;
+		public readonly SkipNode?[] Forward;
 
 	}
-	
 	private SkipList(SkipNode head, 
 					 IEnumerable<T> data, 
 					 int initLevel, 
@@ -41,6 +31,7 @@ public class SkipList<T> : ICollection<T>
 		else if (comparer != null) _compFunc = comparer.Compare;
 		else if (typeof(IComparable).IsAssignableFrom(typeof(T)))
 			_compFunc = (item1, item2) => ((IComparable)item1!).CompareTo((IComparable)item2!);
+		else _compFunc = Comparer<T>.Default.Compare;
 
 		this._head = head;
 		this._maxLevel = initLevel;
@@ -53,7 +44,7 @@ public class SkipList<T> : ICollection<T>
 	/// </summary>
 	public SkipList() : this(new(0), Enumerable.Empty<T>(), 0, null, null) {}
 
-	public SkipList(IEnumerable<IComparable> data) : this(new(0), data.Select(val => (T)val), 0, null, null) {}
+	public SkipList(IEnumerable<IComparable> data) : this(new(0), data.Cast<T>(), 0, null, null) {}
 
 	public SkipList(IEnumerable<T> data, Func<T, T, int> compFunc) : this(new(0), data, 0, compFunc, null) {}
 
@@ -69,9 +60,7 @@ public class SkipList<T> : ICollection<T>
 	public int Count => _size;
 
 	public bool IsReadOnly => false;
-
-
-
+	
     private SkipNode[] FindPrecedingNodes(T value, SkipNode startNode, int level)
 	{
 		if (startNode == null) throw new NullReferenceException();
@@ -79,9 +68,9 @@ public class SkipList<T> : ICollection<T>
 
 		for (int lvl = level; lvl >= 0; lvl--)
 		{
-			while (startNode!.forward[lvl] != null && 
-				   this.Compare(startNode.forward[lvl]!.value!, value) < 0)
-				startNode = startNode.forward[lvl]!;
+			while (startNode!.Forward[lvl] != null && 
+				   this.Compare(startNode.Forward[lvl]!.Value!, value) < 0)
+				startNode = startNode.Forward[lvl]!;
 			predecessors[lvl] = startNode;
 		}
 		return predecessors;
@@ -90,9 +79,9 @@ public class SkipList<T> : ICollection<T>
 	private void AdjustHead(int newMaxLevel)
 	{
 		_maxLevel = newMaxLevel;
-		SkipNode newHead = new SkipNode(_head.value!, _maxLevel);
-		for (int lvl = _head.forward.Length - 1; lvl >= 0; lvl--)
-			newHead.forward[lvl] = _head.forward[lvl];
+		SkipNode newHead = new SkipNode(_head.Value!, _maxLevel);
+		for (int lvl = _head.Forward.Length - 1; lvl >= 0; lvl--)
+			newHead.Forward[lvl] = _head.Forward[lvl];
 		_head = newHead;
 	}
 
@@ -100,12 +89,11 @@ public class SkipList<T> : ICollection<T>
 	{
 		if (value == null) throw new ArgumentNullException($"{nameof(value)} was null");
 		var predecessors = FindPrecedingNodes(value, _head, _maxLevel);
-		if (predecessors[0].forward[0] != null && 
-			Compare(predecessors[0].forward[0]!.value!, value) != 0) return false;
+		if (predecessors[0].Forward[0] == null || Compare(predecessors[0].Forward[0]!.Value!, value) != 0) return false;
 
 		for (int i = _maxLevel; i >= 0; i--)
-			if (predecessors[i].forward[i] != null && Compare(predecessors[i].forward[i]!.value!, value) == 0)
-				predecessors[i].forward[i] = predecessors[i]!.forward[i]!.forward[i];
+			if (predecessors[i].Forward[i] != null && Compare(predecessors[i].Forward[i]!.Value!, value) == 0)
+				predecessors[i].Forward[i] = predecessors[i]!.Forward[i]!.Forward[i];
 
 		_size--;
 		return true;
@@ -117,12 +105,12 @@ public class SkipList<T> : ICollection<T>
 		for (int i = 0; i <= _maxLevel; i++)
 		{
 			var sb = new StringBuilder();
-			while (trav!.forward[0] != null)
+			while (trav!.Forward[0] != null)
 			{
-				var app = i < trav.forward.Length && trav.forward[0] != null ? 
-							sb.Append($"---{trav.forward[0]!.value!.ToString()}") : 
+				var app = i < trav.Forward.Length && trav.Forward[0] != null ? 
+							sb.Append($"---{trav.Forward[0]!.Value!.ToString()}") : 
 							sb.Append("---**");
-				trav = trav.forward[0];
+				trav = trav.Forward[0];
 			}
 			Console.WriteLine(sb.ToString());
 			trav = _head;
@@ -135,18 +123,19 @@ public class SkipList<T> : ICollection<T>
     {
         if (item == null) throw new ArgumentNullException($"{nameof(item)} was null.");
         Random random = new Random();
-        int newLevel = 0;
 
+        int newLevel = 0;
         for (; random.Next() % 2 == 0; newLevel++) { }
+
         if (newLevel > _maxLevel) AdjustHead(newLevel);
+
         SkipNode newNode = new(item, newLevel);
 
         var predecessors = FindPrecedingNodes(item, this._head, _maxLevel);
-
-        for (int lvl = newLevel; lvl >= 0; lvl--)
+		for (int lvl = newLevel; lvl >= 0; lvl--)
         {
-            newNode.forward[lvl] = predecessors[lvl]!.forward[lvl];
-            predecessors[lvl]!.forward[lvl] = newNode;
+            newNode.Forward[lvl] = predecessors[lvl]!.Forward[lvl];
+            predecessors[lvl]!.Forward[lvl] = newNode;
         }
 
         _size++;
@@ -154,14 +143,15 @@ public class SkipList<T> : ICollection<T>
 
 	public void Clear()
     {
-		for (int i = 0; i < _maxLevel; i++) _head.forward[i] = null;
+		for (int i = 0; i < _maxLevel; i++) _head.Forward[i] = null;
 		_size = 0;
 	}
 
     public bool Contains(T item)
 	{
 		var predecessors = FindPrecedingNodes(item, _head, _maxLevel);
-		return Compare(predecessors[0].forward[0]!.value!, item) == 0;
+		if (predecessors[0].Forward[0] == null) return false;
+		return Compare(predecessors[0].Forward[0]!.Value!, item) == 0;
 	}
 
     public void CopyTo(T[] array, int arrayIndex)
@@ -172,17 +162,13 @@ public class SkipList<T> : ICollection<T>
 			throw new ArgumentOutOfRangeException($"{nameof(arrayIndex)} is bigger than the size of the list.");
 
 		var trav = _head;
-		int i    = 0;
-
-		for (; i < arrayIndex; i++) trav = _head.forward[0];
-		while (_head.forward[0] != null) array[i] = trav.forward[0]!.value!;
+		for (int i = 0; i++ <= arrayIndex && trav.Forward[0] != null; trav = trav.Forward[0]) {}
+		for (int i = 0; trav != null; trav = trav.Forward[0]) array[i++] = trav.Value!;
 	}
+
 	public IEnumerator<T> GetEnumerator() => new SkipListEnumerator(this);
 
-	IEnumerator IEnumerable.GetEnumerator()
-	{
-		return GetEnumerator();
-	}
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 	private class SkipListEnumerator : IEnumerator<T>
 	{
@@ -193,15 +179,15 @@ public class SkipList<T> : ICollection<T>
 
 		public bool MoveNext()
 		{
-			if (_trav.forward[0] != null) {_trav = _trav.forward[0]!; return true; }
+			if (_trav.Forward[0] != null) {_trav = _trav.Forward[0]!; return true; }
 			return false;
 		}
 
 		public void Reset() => _trav = _sl._head;
 
-		public T Current => _trav!.value;
+		public T Current => _trav!.Value!;
 
-		object IEnumerator.Current => Current;
+		object IEnumerator.Current => Current!;
 
 		public void Dispose() { }
 	}
