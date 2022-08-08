@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 
 namespace DataStructures;
 
@@ -42,22 +37,13 @@ public class DynamicArray<T> : IList<T>
 
 	private class Enumerator<T> : IEnumerator<T>
 	{
-		public Enumerator(DynamicArray<T> array)
-		{
-			_array = array;
-		}
+		public Enumerator(DynamicArray<T> array) => _array = array;
 
 		private readonly DynamicArray<T> _array;
 
-		public bool MoveNext()
-		{
-			return ++_idx < _array._size;
-		}
+		public bool MoveNext() => ++_idx < _array._size;
 
-		public void Reset()
-		{
-			_idx = -1;
-		}
+		public void Reset() => _idx = -1;
 
 		private int _idx = -1;
 
@@ -71,15 +57,9 @@ public class DynamicArray<T> : IList<T>
 		}
 	}
 
-	public IEnumerator<T> GetEnumerator()
-	{
-		return new Enumerator<T>(this);
-	}
+	public IEnumerator<T> GetEnumerator() => new Enumerator<T>(this);
 
-	IEnumerator IEnumerable.GetEnumerator()
-	{
-		return new Enumerator<T>(this);
-	}
+	IEnumerator IEnumerable.GetEnumerator() => new Enumerator<T>(this);
 
 	private void Resize()
 	{
@@ -110,6 +90,7 @@ public class DynamicArray<T> : IList<T>
 	public void Clear()
 	{
 		Array.Clear(_storage);
+		_size = 0;
 	}
 
 	public bool Contains(T item)
@@ -118,21 +99,17 @@ public class DynamicArray<T> : IList<T>
 		return _storage.Contains(item);
 	}
 
-	public void CopyTo(T[] array, int arrayIndex)
-	{
-		_storage.CopyTo(array, arrayIndex);
-	}
+	public void CopyTo(T[] array, int arrayIndex) => _storage.CopyTo(array, arrayIndex);
 
 	public bool Remove(T item)
 	{
 		var index = IndexOf(item);
 		if (index == -1) return false;
-		else
-		{
-			RemoveAt(index);
-			return true;
-		}
+		RemoveAt(index);
+		return true;
 	}
+
+	public int Capacity => _capacity;
 
 	public int  Count      => this._size;
 	public bool IsReadOnly { get ; }
