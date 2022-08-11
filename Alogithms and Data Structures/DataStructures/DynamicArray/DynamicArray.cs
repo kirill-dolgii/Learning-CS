@@ -7,6 +7,8 @@ public class DynamicArray<T> : IList<T>
 	private int _size;
 	private int _capacity;
 
+	private double _resizeScale = 2;
+
 	private const int DefaultCapacity = 8;
 
 	private T[] _storage;
@@ -83,7 +85,8 @@ public class DynamicArray<T> : IList<T>
 
 	public void Add(T item)
 	{
-		if (_size == _capacity) Resize();
+		if (_size == _capacity) 
+			Capacity = (int)(_capacity * _resizeScale);
 		_storage[_size++] = item;
 	}
 
@@ -109,7 +112,27 @@ public class DynamicArray<T> : IList<T>
 		return true;
 	}
 
-	public int Capacity => _capacity;
+	public int Capacity
+	{
+		get => _capacity;
+		set
+		{
+			if (value < 0) 
+				throw new ArgumentOutOfRangeException($"{nameof(value)} is below zero.");
+			if (value < _size) 
+				throw new ArgumentException($"{nameof(value)} is smaller than " +
+											$"the size of the array.");
+			if (value == _capacity) return;
+			if (value < 0) 
+				throw new ArgumentOutOfRangeException($"{nameof(value)} is below zero.");
+			if (value > 0)
+			{
+                T[] newStorage = new T[_capacity];
+				Array.Copy(_storage, newStorage, 0);
+				_storage = newStorage;
+			}
+		}
+	}
 
 	public int  Count      => this._size;
 	public bool IsReadOnly { get ; }
@@ -127,7 +150,7 @@ public class DynamicArray<T> : IList<T>
 	public void Insert(int index, T item)
 	{
 		if (index < 0 || index > this._capacity - 1) throw new IndexOutOfRangeException();
-		if (_capacity < _size + 1) Resize();
+		if (_capacity - _size == 0) Capacity = (int)(Capacity * _resizeScale);
 		for (var i = _size - 1; i >= index; i--) _storage[i + 1] = _storage[i];
 		_storage[index] = item;
 		_size++;
@@ -139,7 +162,7 @@ public class DynamicArray<T> : IList<T>
 		for (var i = index; i < _size - 1; i++) _storage[i] = _storage[i + 1];
 		_storage[_size - 1] = default;
 		_size--;
-		this.Resize();
+		if (_size < Capacity / _resizeScale) Capacity = (int)(Capacity * _resizeScale);
 	}
 
 	public T this[int index]
