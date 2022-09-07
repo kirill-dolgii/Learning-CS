@@ -10,67 +10,85 @@ namespace DataStructures.BinarySearchTree;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class BinarySearchTree<T> : ICollection<T>
-where T : IComparable<T>
 {
 	/// <summary>
 	/// Represents a BinarySearchTree node - the base element of a tree.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class TreeNode
+	protected class TreeNode
 	{
 		public readonly T Value;
 
-		public TreeNode? LeftLeaf;
-		public TreeNode? RightLeaf;
+		public TreeNode? LeftChild;
+		public TreeNode? RightChild;
 
 		public TreeNode(T elem)
 		{
 			Value = elem;
-			LeftLeaf = null;
-			RightLeaf = null;
+			LeftChild = null;
+			RightChild = null;
 		}
 
 		public TreeNode(T elem, TreeNode? left, TreeNode? right) : this(elem)
 		{
-			LeftLeaf = left;
-			RightLeaf = right;
+			LeftChild = left;
+			RightChild = right;
 		}
 	}
 
-	private          int                       _size;
-	public           TreeNode?              Root;
+	/// <summary>
+	/// Method used by test class to obtain protected Root outside of the instance.
+	/// </summary>
+	protected virtual TreeNode? GetTreeNode(BinarySearchTree<T> bst) => bst.Root;
+
+
+	private int       _size;
+	protected TreeNode? Root;
 
 	private readonly BinarySearchTreeSortOrder _order;
-	private readonly Comparer<T>?              _comparer = null;
-
+	private readonly IComparer<T>              _comparer;
 	public BinarySearchTree()
 	{
 		Root = null;
 		_size = 0;
+		_comparer = Comparer<T>.Default;
 	}
 
-	public BinarySearchTree(T firstElem)
+	public BinarySearchTree(IEnumerable<T> data,
+							 BinarySearchTreeSortOrder order,
+							 IComparer<T>? comparer)
 	{
-		Root = new TreeNode(firstElem);
-		_size = 0;
-	}
+		if (data == null) throw new ArgumentNullException(nameof(data));
+		if (!data.Any()) throw new ArgumentException(nameof(data));
 
-	public BinarySearchTree(T[] arry, 
-							BinarySearchTreeSortOrder order = BinarySearchTreeSortOrder.Ascdending,
-							Comparer<T>? comparer = null)
-	{
-		if (arry == null) throw new ArgumentNullException(nameof(arry));
-		if (arry.Length == 0) throw new ArgumentException(nameof(arry));
-
-		this.Root = new TreeNode(arry[0]);
+		this.Root = new TreeNode(data.First());
 		this._size = 1;
 
 		_order = order;
-		_comparer = comparer;
+		_comparer = comparer ?? Comparer<T>.Default;
 
-		foreach (T elem in arry.Skip(1)) this.Add(elem);
+		foreach (T elem in data.Skip(1)) this.Add(elem);
 	}
-	
+
+	public BinarySearchTree(IEnumerable<T> data) : this(data, BinarySearchTreeSortOrder.Ascdending, null) {}
+
+	public BinarySearchTree(IComparer<T> comparer) : this() => _comparer = comparer;
+
+	public BinarySearchTree(BinarySearchTreeSortOrder order) : this() => _order = order;
+
+	public BinarySearchTree(IEnumerable<T> data, 
+							IComparer<T> comparer) : this (data, BinarySearchTreeSortOrder.Ascdending, comparer) {}
+
+	public BinarySearchTree(IEnumerable<T> data,
+							BinarySearchTreeSortOrder order) : this(data, order, null) { }
+
+	public BinarySearchTree(BinarySearchTreeSortOrder order,
+							IComparer<T> comparer) : this()
+	{
+		_order = order;
+		_comparer = comparer;
+	}
+
 	/// <summary>
 	/// Adds an element to the Binary Search Tree in O(n) worse case and O(log(n)) average case.
 	/// If the given element already exists in the tree adds a duplicate.
@@ -89,8 +107,8 @@ where T : IComparable<T>
 		else
 		{
 			var cmp = this.Compare(item, addRoot.Value);
-			if (cmp <= 0) addRoot.LeftLeaf = Add(addRoot.LeftLeaf, item);
-			if (cmp > 0) addRoot.RightLeaf = Add(addRoot.RightLeaf, item);
+			if (cmp <= 0) addRoot.LeftChild = Add(addRoot.LeftChild, item);
+			if (cmp > 0) addRoot.RightChild = Add(addRoot.RightChild, item);
 		}
 
 		return addRoot;
@@ -98,8 +116,8 @@ where T : IComparable<T>
 
 	private int Compare(T item1, T item2)
 	{
-		int compVal = this._comparer?.Compare(item1, item2) ?? item1.CompareTo(item2);
-		return compVal * (_order == BinarySearchTreeSortOrder.Ascdending ? 1 : -1);
+		int compVal = this._comparer.Compare(item1, item2);
+		return compVal * (int)_order;
 	}
 	
 	/// <summary>
@@ -122,8 +140,8 @@ where T : IComparable<T>
 		while (node != null)
 		{
 			int cmp = this.Compare(item, node.Value);
-			if (cmp < 0) node = node.LeftLeaf;
-			else if (cmp > 0) node = node.RightLeaf;
+			if (cmp < 0) node = node.LeftChild;
+			else if (cmp > 0) node = node.RightChild;
 			else return true;
 		}
 
@@ -159,7 +177,7 @@ where T : IComparable<T>
 
 	private TreeNode Min(TreeNode minRoot)
 	{
-		while (minRoot.LeftLeaf != null) minRoot = minRoot.LeftLeaf;
+		while (minRoot.LeftChild != null) minRoot = minRoot.LeftChild;
 		return minRoot;
 	}
 
@@ -176,7 +194,7 @@ where T : IComparable<T>
 
 	private TreeNode Max(TreeNode maxRoot)
 	{
-		while (maxRoot.RightLeaf != null) maxRoot = maxRoot.RightLeaf;
+		while (maxRoot.RightChild != null) maxRoot = maxRoot.RightChild;
 		return maxRoot;
 	}
 
@@ -200,23 +218,23 @@ where T : IComparable<T>
 
 		var cmp = this.Compare(item, removeRoot.Value);
 
-		if (cmp == 1) removeRoot.RightLeaf = Remove(removeRoot.RightLeaf, item);
-		else if (cmp == -1) removeRoot.LeftLeaf = Remove(removeRoot.LeftLeaf, item);
+		if (cmp == 1) removeRoot.RightChild = Remove(removeRoot.RightChild, item);
+		else if (cmp == -1) removeRoot.LeftChild = Remove(removeRoot.LeftChild, item);
 		else
 		{
-			if (removeRoot.LeftLeaf == null && removeRoot.RightLeaf == null) return null;
+			if (removeRoot.LeftChild == null && removeRoot.RightChild == null) return null;
 			//there are 2 leafs
-			if (removeRoot.RightLeaf != null && removeRoot.LeftLeaf != null)
+			if (removeRoot.RightChild != null && removeRoot.LeftChild != null)
 			{
 				//find min, replace root with the min and remove min
-				var rightMin = Min(removeRoot.RightLeaf);
+				var rightMin = Min(removeRoot.RightChild);
 
-				rightMin.RightLeaf = Remove(removeRoot.RightLeaf, rightMin.Value);
-				rightMin.LeftLeaf = removeRoot.LeftLeaf;
+				rightMin.RightChild = Remove(removeRoot.RightChild, rightMin.Value);
+				rightMin.LeftChild = removeRoot.LeftChild;
 				return rightMin;
 			}
 
-			return removeRoot.LeftLeaf ?? removeRoot.RightLeaf;
+			return removeRoot.LeftChild ?? removeRoot.RightChild;
 		}
 
 		return removeRoot;
@@ -263,18 +281,18 @@ where T : IComparable<T>
 		{
 			if (_stack.Count == 0) return false;
 
-			while (_trav.LeftLeaf != null)
+			while (_trav.LeftChild != null)
 			{
-				_stack.Push(_trav.LeftLeaf);
-				_trav = _trav.LeftLeaf;
+				_stack.Push(_trav.LeftChild);
+				_trav = _trav.LeftChild;
 			}
 
 			_current = _stack.Pop();
 
-			if (_current.RightLeaf != null)
+			if (_current.RightChild != null)
 			{
-				_stack.Push(_current.RightLeaf);
-				_trav = _current.RightLeaf;
+				_stack.Push(_current.RightChild);
+				_trav = _current.RightChild;
 			}
 
 			return true;
@@ -326,8 +344,8 @@ where T : IComparable<T>
 		{
 			if (_stack.Count == 0) return false;
 			_current = _stack.Pop();
-			if (_current.RightLeaf != null) _stack.Push(_current.RightLeaf);
-			if (_current.LeftLeaf != null) _stack.Push(_current.LeftLeaf);
+			if (_current.RightChild != null) _stack.Push(_current.RightChild);
+			if (_current.LeftChild != null) _stack.Push(_current.LeftChild);
 			return true;
 		}
 
@@ -353,7 +371,7 @@ where T : IComparable<T>
 		{
 			this._bst = bst ?? throw new ArgumentNullException(nameof(bst));
 			if (bst.Root == null) throw new NullReferenceException($"{nameof(bst.Root)} is null.");
-			_current = new TreeNode(bst.Root.Value, bst.Root.LeftLeaf, bst.Root.RightLeaf);
+			_current = new TreeNode(bst.Root.Value, bst.Root.LeftChild, bst.Root.RightChild);
 			_queue.Enqueue(bst.Root);
 		}
 		
@@ -363,8 +381,8 @@ where T : IComparable<T>
 
 			_current = _queue.Dequeue();
 
-			if (_current.LeftLeaf != null) _queue.Enqueue(_current.LeftLeaf);
-			if (_current.RightLeaf != null) _queue.Enqueue(_current.RightLeaf);
+			if (_current.LeftChild != null) _queue.Enqueue(_current.LeftChild);
+			if (_current.RightChild != null) _queue.Enqueue(_current.RightChild);
 
 			return true;
 		}

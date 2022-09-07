@@ -7,7 +7,7 @@ using DataStructures.BinarySearchTree;
 namespace DataStructuresTests;
 
 [TestClass]
-public class BinarySearchTreeTests
+public class BinarySearchTreeTests : BinarySearchTree<int>
 {
 	[TestMethod]
 	public void InOrderTraversalTest()
@@ -17,7 +17,7 @@ public class BinarySearchTreeTests
 
 		var sorted = new List<int>();
 
-		var iter = bst.GetEnumerator(Traversal.InOrder);
+		using var iter = bst.GetEnumerator(Traversal.InOrder);
 		while (iter.MoveNext()) sorted.Add(iter.Current);
 
 		var list = new List<int>(arry).OrderBy(v => v);
@@ -31,8 +31,8 @@ public class BinarySearchTreeTests
 		void PreOrderTraversal(BinarySearchTree<int>.TreeNode root, ref List<int> ret)
 		{
 			ret.Add(root.Value);
-			if (root.LeftLeaf != null) PreOrderTraversal(root.LeftLeaf, ref ret);
-			if (root.RightLeaf != null) PreOrderTraversal(root.RightLeaf, ref ret);
+			if (root.LeftChild != null) PreOrderTraversal(root.LeftChild, ref ret);
+			if (root.RightChild != null) PreOrderTraversal(root.RightChild, ref ret);
 		}
 
 		int[] arry = { 3, 16, 2, 14, 19, 8, 12, 1, 15, 2, 5, 78, 92, 122, 0, -1, 12, -155, 2, 67, 81, 93, 12 };
@@ -40,11 +40,11 @@ public class BinarySearchTreeTests
 
 		var trav = new List<int>();
 
-		var iter = bst.GetEnumerator(Traversal.PreOrder);
+		using var iter = bst.GetEnumerator(Traversal.PreOrder);
 		while (iter.MoveNext()) trav.Add(iter.Current);
 
 		var goodTrav = new List<int>();
-		PreOrderTraversal(bst.Root, ref goodTrav);
+		PreOrderTraversal(this.GetTreeNode(bst)!, ref goodTrav);
 		
 		Assert.IsTrue(goodTrav.SequenceEqual(trav));
 	}
@@ -72,13 +72,13 @@ public class BinarySearchTreeTests
 		Assert.AreEqual(22, bst.Max());
 
 		bst.Add(3);
-		Assert.AreEqual(3, bst.Root.LeftLeaf.LeftLeaf.RightLeaf.LeftLeaf.Value);
+		Assert.AreEqual(3, GetTreeNode(bst)!.LeftChild!.LeftChild!.RightChild!.LeftChild!.Value);
 
 		bst.Add(8);
-		Assert.AreEqual(8, bst.Root.RightLeaf.LeftLeaf.RightLeaf.Value);
+		Assert.AreEqual(8, GetTreeNode(bst)!.RightChild!.LeftChild!.RightChild!.Value);
 
 		bst.Add(14);
-		Assert.AreEqual(14, bst.Root.RightLeaf.RightLeaf.LeftLeaf.Value);
+		Assert.AreEqual(14, GetTreeNode(bst)!.RightChild!.RightChild!.LeftChild!.Value);
 	}
 
 	[TestMethod]
@@ -91,21 +91,21 @@ public class BinarySearchTreeTests
 
 		//Remove a node with 2 children
 		bst.Remove(6);
-		Assert.AreEqual(7, bst.Root.Value);
-		Assert.AreEqual(null, bst.Root.RightLeaf.LeftLeaf);
+		Assert.AreEqual(7, GetTreeNode(bst)!.Value);
+		Assert.AreEqual(null, GetTreeNode(bst)!.RightChild!.LeftChild);
 		Assert.AreEqual(arry.Length - 1, bst.Count);
 
 		//Remove a leaf
 		bst.Remove(4);
-		Assert.AreEqual(null, bst.Root.LeftLeaf.LeftLeaf.RightLeaf);
+		Assert.AreEqual(null, GetTreeNode(bst)!.LeftChild!.LeftChild!.RightChild);
 
 		//remove a node with one right child
 		bst.Remove(12);
-		Assert.AreEqual(15, bst.Root.RightLeaf.Value);
+		Assert.AreEqual(15, GetTreeNode(bst)!.RightChild!.Value);
 
 		//remove a node with one left child
 		bst.Remove(5);
-		Assert.AreEqual(0, bst.Root.LeftLeaf.Value);
+		Assert.AreEqual(0, GetTreeNode(bst)!.LeftChild!.Value);
 	}
 
 	[TestMethod]
