@@ -2,41 +2,40 @@
 
 namespace DataStructures.HashTable;
 
-public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
+public class HashTableSeparateChaining<TKey, TValue> : IDictionary<TKey, TValue>
 {
 	private class KeyValuePairEntity
 	{
-		public bool                       IsDeleted;
-		public KeyValuePair<TKey, TValue> Kv;
-		public KeyValuePairEntity(KeyValuePair<TKey, TValue> kv, bool isDeleted) { this.Kv = kv; this.IsDeleted = isDeleted; }
+		public          bool                       IsDeleted;
+		public readonly KeyValuePair<TKey, TValue> Kv;
 
-		public void Delete() { IsDeleted = true; }
+		public KeyValuePairEntity(KeyValuePair<TKey, TValue> kv, bool isDeleted)
+		{
+			this.Kv = kv; 
+			this.IsDeleted = isDeleted;
+		}
 	}
 
 	private const int    DEFAULT_CAPACITY    = 32;
 	private const double DEFAULT_LOAD_FACTOR = 0.75;
 	private const double RESIZE_SCALE        = 0.65;
 
-	private readonly IEqualityComparer<TKey> _keyComp = EqualityComparer<TKey>.Default;
+	private readonly IEqualityComparer<TKey> _keyComp;
+	private readonly double                  _loadFactor;
 
 	private LinkedList<KeyValuePairEntity>?[] _buckets;
 	private List<KeyValuePairEntity>          _addedValues;
 	private int                               _size;
 	private int                               _capacity;
 
-	private readonly double              _loadFactor;
-	private readonly HashFunction<TKey> _hashFunc;
-
-	private int _collisionsNumber;
-
-	public HashTable(IEnumerable<KeyValuePair<TKey, TValue>> kvs,
+	public HashTableSeparateChaining(IEnumerable<KeyValuePair<TKey, TValue>> kvs,
 					 int initialCapacity, 
-					 double loadFactor, 
-					 HashFunction<TKey> hashFunc)
+					 double loadFactor, IEqualityComparer<TKey>? keyComparer)
 	{
 		if (kvs == null) throw new NullReferenceException(nameof(kvs));
-		if (initialCapacity < 0) throw new ArgumentException(nameof(initialCapacity));
 		if (loadFactor < 0 || loadFactor > 1) throw new ArgumentException(nameof(loadFactor));
+
+		_keyComp = keyComparer ?? EqualityComparer<TKey>.Default;
 
 		int size = kvs.Count();
 		_capacity = new int[] { initialCapacity, DEFAULT_CAPACITY, (int)(size / _loadFactor) }.Max();
@@ -45,28 +44,23 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		_addedValues = new List<KeyValuePairEntity>(_capacity);
 
 		_loadFactor = loadFactor;
-        _hashFunc = hashFunc ?? new();
 
 		foreach (var kv in kvs) this.Add(kv);
 	}
 
-	public HashTable() : this(Enumerable.Empty<KeyValuePair<TKey, TValue>>(),
+	public HashTableSeparateChaining() : this(Enumerable.Empty<KeyValuePair<TKey, TValue>>(),
 							  DEFAULT_CAPACITY,
-							  DEFAULT_LOAD_FACTOR, new()) {}
+							  DEFAULT_LOAD_FACTOR, null) {}
 
-	public HashTable(HashFunction<TKey> hf) : this() { _hashFunc = hf; }
+	public HashTableSeparateChaining(IEnumerable<KeyValuePair<TKey, TValue>> data) : this (
+		data, data.Count(), DEFAULT_LOAD_FACTOR, null) {}
 
-	public HashTable(IEnumerable<KeyValuePair<TKey, TValue>> data, 
-					 HashFunction<TKey> hf) : this (data, data.Count(), DEFAULT_LOAD_FACTOR, hf) {}
+	private int AdjustedHash(TKey key)
+	{
+		if (key == null) throw new NullReferenceException();
+		return (int)(Math.Abs(_keyComp?.GetHashCode(key) ?? key.GetHashCode()) % _capacity);
+	}
 
-	public static HashTable<TKey, TValue> Create(IEnumerable<KeyValuePair<TKey, TValue>> kvs,
-												 int initialCapacity,
-												 double loadFactor,
-												 HashFunction<TKey> hashFunc) 
-										  => new(kvs, initialCapacity, loadFactor, hashFunc);
-
-	private int AdjustedHash(TKey key) => Math.Abs((int)(_hashFunc.GetHash(key) % _capacity));
-	
 	public void Add(KeyValuePair<TKey, TValue> item)
 	{
 		if (item.Key == null) throw new ArgumentNullException(nameof(item.Key));
@@ -78,7 +72,6 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		_buckets[index] ??= new();
 		var entity = new KeyValuePairEntity(item, false);
 
-		if (_buckets[index]!.Count != 0) _collisionsNumber++;
 		_buckets[index]!.AddLast(entity);
 		_addedValues.Add(entity);
 
@@ -123,9 +116,7 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		=> _addedValues.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv).ToArray().CopyTo(array, arrayIndex);
 
 	public bool Remove(KeyValuePair<TKey, TValue> item) => Remove(item.Key);
-
-	public int CollisionsNumber => _collisionsNumber;
-
+	
 	public int  Count      => _size;
 	public bool IsReadOnly => false;
 	public void Add(TKey key, TValue value) => Add(new KeyValuePair<TKey, TValue>(key, value));
@@ -137,10 +128,8 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		if (key == null) throw new ArgumentNullException(nameof(key));
 		var node = BucketFindNode(key);
 		if (node == null) return false;
-		if (node.List!.Count > 1) _collisionsNumber--;
-        node.Value.Delete();
+        node.Value.IsDeleted = true;
 		node.List!.Remove(node);
-		node.Value.Delete();
 		_size--;
 		if (_size <= _capacity * _loadFactor * 0.4) Resize((int)(_capacity / _loadFactor * 0.5));
 		return true;
@@ -180,7 +169,6 @@ public class HashTable<TKey, TValue> : IDictionary<TKey, TValue>
 		var enumerable = _addedValues.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv);
 		return enumerable.GetEnumerator();
 	}
-
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
