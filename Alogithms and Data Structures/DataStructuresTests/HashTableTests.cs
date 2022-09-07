@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using DataStructures.HashTable;
+using DataStructuresTests.Helpers;
 
 namespace DataStructuresTests;
 
@@ -15,7 +16,7 @@ public class HashTableTests
 
 	private IEnumerable<KeyValuePair<Person, City>> _testData;
 
-	private HashFunction<Person> _hf   = new((pers) => pers.Age * pers.Name.Length * 300000);
+	//private HashFunction<Person> _hf   = new((pers) => pers.Age * pers.Name.Length * 300000);
 	private Random               _rand = new Random(222);
 
 	private string RandomString(int length, Random random)
@@ -32,7 +33,7 @@ public class HashTableTests
 													new City(RandomString(rand.Next(8, 10), rand), rand.Next(50))));
 	}
 
-	private HashTable<Person, City>              _htSepCh;
+	private HashTableSeparateChaining<Person, City>              _htSepCh;
 	private HashTableLinearProbing<Person, City> _htLinPr;
 
 
@@ -40,8 +41,8 @@ public class HashTableTests
 	public void Initialize()
 	{
 		_testData = GenerateTestData(_rand, 100).ToArray();
-		_htSepCh = new(_testData, _hf);
-		_htLinPr = new(_testData, _hf);
+		_htSepCh = new(_testData);
+		_htLinPr = new(_testData);
 	}
 
 	[TestMethod]
@@ -59,8 +60,8 @@ public class HashTableTests
 	[TestMethod]
 	public void CONSTRUCTION_BY_ADDING()
 	{
-		_htLinPr  = new HashTableLinearProbing<Person, City>(_hf);
-		_htSepCh  = new HashTable<Person, City>(_hf);
+		_htLinPr  = new HashTableLinearProbing<Person, City>();
+		_htSepCh  = new HashTableSeparateChaining<Person, City>();
 
 		TestHelperIDictionary.CONSTRUCTION_BY_ADDING(_testData,
 													 _htSepCh,
@@ -74,8 +75,8 @@ public class HashTableTests
 	[TestMethod]
 	public void ADD_DUPLICATE_KEY()
 	{
-        var sepCh = new HashTable<Person, City>(_hf);
-        var linPr = new HashTableLinearProbing<Person, City>(_hf);
+        var sepCh = new HashTableSeparateChaining<Person, City>();
+        var linPr = new HashTableLinearProbing<Person, City>();
 
         TestHelperIDictionary.ADD_DUPLICATE_KEY(_testData, sepCh);
 		TestHelperIDictionary.ADD_DUPLICATE_KEY(_testData, linPr);
@@ -98,8 +99,8 @@ public class HashTableTests
 	[TestMethod]
 	public void REMOVE_ALL()
 	{
-		var sepCh    = new HashTable<Person, City>(_hf);
-		var linPr    = new HashTableLinearProbing<Person, City>(_hf);
+		var sepCh    = new HashTableSeparateChaining<Person, City>();
+		var linPr    = new HashTableLinearProbing<Person, City>();
 
 		TestHelperIDictionary.REMOVE_ALL(_testData, linPr, new Dictionary<Person, City>());
 		TestHelperIDictionary.REMOVE_ALL(_testData, sepCh, new Dictionary<Person, City>());
@@ -115,8 +116,8 @@ public class HashTableTests
 	[TestMethod]
 	public void ADD_KV_SUCCESSFUL()
 	{
-		var sepCh = new HashTable<Person, City>(_hf);
-		var linPr = new HashTableLinearProbing<Person, City>(_hf);
+		var sepCh = new HashTableSeparateChaining<Person, City>();
+		var linPr = new HashTableLinearProbing<Person, City>();
 
 		var kv = GenerateTestData(_rand, 1).First();
 
@@ -127,8 +128,8 @@ public class HashTableTests
 	[TestMethod]
 	public void CONTAINS_KEY_SUCCESSFUL()
 	{
-		var sepCh = new HashTable<Person, City>(_hf);
-		var linPr = new HashTableLinearProbing<Person, City>(_hf);
+		var sepCh = new HashTableSeparateChaining<Person, City>();
+		var linPr = new HashTableLinearProbing<Person, City>();
 		
 		TestHelperIDictionary.CONTAINS_KEY_SUCCESSFUL(_testData, linPr, new Dictionary<Person, City>());
 		TestHelperIDictionary.CONTAINS_KEY_SUCCESSFUL(_testData, sepCh, new Dictionary<Person, City>());
@@ -144,8 +145,8 @@ public class HashTableTests
 	[TestMethod]
 	public void CONTAINS_NOT_EXISTING_KV()
 	{
-		var sepCh = new HashTable<Person, City>(_hf);
-		var linPr = new HashTableLinearProbing<Person, City>(_hf);
+		var sepCh = new HashTableSeparateChaining<Person, City>();
+		var linPr = new HashTableLinearProbing<Person, City>();
 
 		TestHelperIDictionary.
 			CONTAINS_KEY_NOT_EXISTING(sepCh, new KeyValuePair<Person, City>(new Person("ds", 23), null));
@@ -156,8 +157,8 @@ public class HashTableTests
 	[TestMethod]
 	public void REMOVE_KEY_SUCCESSFUL()
 	{
-		var sepCh = new HashTable<Person, City>(_hf);
-		var linPr = new HashTableLinearProbing<Person, City>(_hf);
+		var sepCh = new HashTableSeparateChaining<Person, City>();
+		var linPr = new HashTableLinearProbing<Person, City>();
 
 		TestHelperIDictionary.REMOVE_KEY_SUCCESSFUL(_testData, linPr);
 		TestHelperIDictionary.REMOVE_KEY_SUCCESSFUL(_testData, sepCh);
@@ -166,8 +167,8 @@ public class HashTableTests
 	[TestMethod]
 	public void REMOVE_KEY_NULL()
 	{
-		var sepCh = new HashTable<Person, City>(_hf);
-		var linPr = new HashTableLinearProbing<Person, City>(_hf);
+		var sepCh = new HashTableSeparateChaining<Person, City>();
+		var linPr = new HashTableLinearProbing<Person, City>();
 
 		TestHelperIDictionary.REMOVE_KEY_NULL(sepCh);
 		TestHelperIDictionary.REMOVE_KEY_NULL(linPr);
@@ -223,8 +224,8 @@ public class HashTableTests
 	[TestMethod]
 	public void ENUMERATION_SUCCESSFUL()
 	{
-		var htLinPr = new HashTableLinearProbing<Person, City>(_hf);
-		var htSepCh = new HashTable<Person, City>(_hf);
+		var htLinPr = new HashTableLinearProbing<Person, City>();
+		var htSepCh = new HashTableSeparateChaining<Person, City>();
 
 		TestHelperIDictionary.ENUMERATION_SUCCESSFUL(_testData, htLinPr);
 		TestHelperIDictionary.ENUMERATION_SUCCESSFUL(_testData, htSepCh);
@@ -233,25 +234,11 @@ public class HashTableTests
 	[TestMethod]
 	public void ENUMERATION_AFTER_REMOVAL()
 	{
-		var htLinPr = new HashTableLinearProbing<Person, City>(_hf);
-		var htSepCh = new HashTable<Person, City>(_hf);
+		var htLinPr = new HashTableLinearProbing<Person, City>();
+		var htSepCh = new HashTableSeparateChaining<Person, City>();
 
 		TestHelperIDictionary.ENUMERATION_AFTER_REMOVAL(_testData, htLinPr);
 		TestHelperIDictionary.ENUMERATION_AFTER_REMOVAL(_testData, htSepCh);
 	}
 
-
-	[TestMethod]
-	public void COLLISIONS_COUNT()
-	{
-		var hf      = new HashFunction<Person>((pers) => pers.Name.Contains("asd") ? 10 : _hf.GetHash(pers));
-		var htSepCh = new HashTable<Person, City>(hf);
-
-		htSepCh.Add(new KeyValuePair<Person, City>(new Person("asd", 13), null));
-		htSepCh.Add(new KeyValuePair<Person, City>(new Person("asd1", 13), null));
-		Assert.AreEqual(htSepCh.CollisionsNumber, 1);
-
-		htSepCh.Remove(new Person("asd", 13));
-		Assert.AreEqual(htSepCh.CollisionsNumber, 0);
-	}
 }

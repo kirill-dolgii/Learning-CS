@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DataStructures;
+using DataStructuresTests.Helpers;
 
 namespace DataStructuresTests;
 

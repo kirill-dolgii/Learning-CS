@@ -160,10 +160,12 @@ public class SkipList<T> : ICollection<T>
 		if (arrayIndex < 0) throw new ArgumentOutOfRangeException($"{nameof(array)} is below zero.");
 		if (arrayIndex > _size)
 			throw new ArgumentOutOfRangeException($"{nameof(arrayIndex)} is bigger than the size of the list.");
+		if (array.Length < this.Count)
+			throw new AggregateException("array size must be greater or equal to the skip list size.");
 
-		var trav = _head;
-		for (int i = 0; i++ <= arrayIndex && trav.Forward[0] != null; trav = trav.Forward[0]) {}
-		for (int i = 0; trav != null; trav = trav.Forward[0]) array[i++] = trav.Value!;
+		var trav = _head.Forward[0];
+		//for (int i = 0; i++ <= arrayIndex && trav.Forward[0] != null; trav = trav.Forward[0]) {}
+		for (int i = arrayIndex; trav != null; trav = trav.Forward[0]) array[i++] = trav.Value!;
 	}
 
 	public IEnumerator<T> GetEnumerator() => new SkipListEnumerator(this);
