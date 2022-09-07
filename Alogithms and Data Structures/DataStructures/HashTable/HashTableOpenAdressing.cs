@@ -1,40 +1,40 @@
 ﻿using System.Collections;
 
 namespace DataStructures.HashTable;
+
 public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TKey, TValue>
 {
 	private class KeyValuePairEntity
 	{
-		public bool                       IsDeleted;
-		public KeyValuePair<TKey, TValue> Kv;
-		public KeyValuePairEntity(KeyValuePair<TKey, TValue> kv, bool isDeleted) { this.Kv = kv; this.IsDeleted = isDeleted; }
+		public          bool                       IsDeleted;
+		public readonly KeyValuePair<TKey, TValue> Kv;
+		public readonly int                        HashCode;
 
-		public void Delete() { IsDeleted = true; }
+		public KeyValuePairEntity(KeyValuePair<TKey, TValue> kv, int hashCode, bool isDeleted)
+		{
+			Kv = kv; 
+			IsDeleted = isDeleted; 
+			this.HashCode = hashCode;
+		}
 	}
 
 	private const int    DEFAILT_CAPACITY    = 4;
 	private const double DEFAULT_LOAD_FACTOR = 0.75;
 	private const double RESIZE_SCALE        = 0.65;
 
-	private readonly IEqualityComparer<TKey>   _keyCmp = EqualityComparer<TKey>.Default;
-	private readonly IEqualityComparer<TValue> _valCmp = EqualityComparer<TValue>.Default;
+	private readonly IEqualityComparer<TKey> _keyCmp = EqualityComparer<TKey>.Default;
+	private readonly double                  _loadFactor;
 
-	private KeyValuePairEntity?[] _entities;
+	private          KeyValuePairEntity?[]   _entities;
 
-	private   int _size;
-	protected int Capacity;
-
-	private readonly double             _loadFactor;
-	private readonly HashFunction<TKey> _hf;
-
-	private List<KeyValuePairEntity> _addedValues;
+	private   int                      _size;
+	protected int                      Capacity;
+	private   List<KeyValuePairEntity> _added;
 
 	private protected HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data, 
 								        int initialCapacity, 
-								        double loadFactor, 
-										HashFunction<TKey> hf)
+								        double loadFactor)
 	{
-		if (initialCapacity < 0) throw new ArgumentException(nameof(initialCapacity));
 		if (loadFactor <= 0 || loadFactor > 1) throw new ArgumentException(nameof(loadFactor));
 		if (data == null) throw new ArgumentNullException(nameof(data));
 
@@ -43,30 +43,26 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 								(int)(data.Count() / _loadFactor) }.Max();
 
 		_entities = new KeyValuePairEntity?[Capacity];
-		_addedValues = new List<KeyValuePairEntity>(Capacity);
-		_hf = hf;
+		_added = new List<KeyValuePairEntity>(Capacity);
 
 		foreach (var kv in data) this.Add(kv);
 	}
 
 	private protected HashTableOpenAddressingBase() : this(Enumerable.Empty<KeyValuePair<TKey, TValue>>(), 
 														   DEFAILT_CAPACITY, 
-														   DEFAULT_LOAD_FACTOR, 
-														   new()) {}
+														   DEFAULT_LOAD_FACTOR) {}
 
 	private protected HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data) : this(data, 
 																									   DEFAILT_CAPACITY, 
-																									   DEFAULT_LOAD_FACTOR, 
-																									   new()) {}
+																									   DEFAULT_LOAD_FACTOR) {}
 
-	private protected HashTableOpenAddressingBase(IEnumerable<KeyValuePair<TKey, TValue>> data, 
-												  HashFunction<TKey> hashFunc) : this(data,
-																					  DEFAILT_CAPACITY,
-																					  DEFAULT_LOAD_FACTOR,
-																					  hashFunc) {}
-
-	private int AdjustedHash(TKey key) => Math.Abs(_hf.GetHash(key)) % Capacity;
-
+	private int AdjustedHash(TKey key, out int hashCode)
+	{
+		if (key == null) throw new NullReferenceException();
+		hashCode = Math.Abs(_keyCmp?.GetHashCode(key) ?? key.GetHashCode());
+		return (int)(hashCode % Capacity);
+	}
+	
 	protected abstract int Probe(int index, int i);
 
 	public void Add(KeyValuePair<TKey, TValue> item)
@@ -77,23 +73,25 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 
 		if (_size >= Capacity * _loadFactor) Resize((int)(Capacity / RESIZE_SCALE));
 
-		int index = AdjustedHash(item.Key);
+		int index = AdjustedHash(item.Key, out int hashCode);
 
 		for (var i = 0; _entities[index] != null && !_entities[index]!.IsDeleted; index = Probe(index, i++)) { }
-		
-		_entities[index] = new KeyValuePairEntity(item, false);
-		_addedValues.Add(_entities[index]!);
+
+		KeyValuePairEntity entity = new(item, hashCode, false);
+
+		_entities[index] = entity;
+		_added.Add(entity);
 		_size++;
 	}
 
 	private void Resize(int newCapacity)
 	{
-		var existing = _addedValues.Where(ent => ent is { IsDeleted: false }).ToArray();
+		var existing = _added.Where(ent => ent is { IsDeleted: false }).ToArray();
 
 		Capacity = newCapacity;
 
 		_entities = new KeyValuePairEntity?[Capacity];
-		_addedValues = new List<KeyValuePairEntity>(Capacity);
+		_added = new List<KeyValuePairEntity>(Capacity);
 		_size = 0;
 
 		foreach (var ex in existing) this.Add(ex.Kv);
@@ -102,17 +100,18 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 	public void Clear()
 	{
 		_entities = new KeyValuePairEntity[Capacity];
-		_addedValues = new List<KeyValuePairEntity>(Capacity);
+		_added = new List<KeyValuePairEntity>(Capacity);
 		_size = 0;
 	}
 
-	private int FindEntityIndex(TKey key)
+	private int FindEntityIndex(TKey key, out int hc)
 	{
-		int index = AdjustedHash(key);
+		int index = AdjustedHash(key, out int hashCode);
+		hc = hashCode;
 		if (_entities[index] == null) return -1;
 
 		for (int i = 0; _entities[index] != null && i <= Capacity; index = Probe(index, i++))
-			if (_keyCmp.Equals(_entities[index]!.Kv.Key, key))
+			if (hashCode == _entities[index]!.HashCode && _keyCmp.Equals(_entities[index]!.Kv.Key, key))
 			{
 				if (!_entities[index]!.IsDeleted) return index;
 				return -1;
@@ -127,7 +126,7 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 	{
 		if (array == null) throw new ArgumentNullException("array");
 		if (arrayIndex < 0) throw new ArgumentException("arrayIndex");
-		_addedValues.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv).ToArray().CopyTo(array, arrayIndex);
+		_added.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv).ToArray().CopyTo(array, arrayIndex);
 	}
 
 	public bool Remove(KeyValuePair<TKey, TValue> item) => Remove(item.Key);
@@ -145,19 +144,18 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 	public bool ContainsKey(TKey key)
 	{
 		if (key == null) throw new ArgumentNullException($"{nameof(key)} was null.");
-		int index = FindEntityIndex(key);
+		int index = FindEntityIndex(key, out _);
 		return index != -1;
 	}
 
 	public bool Remove(TKey key)
 	{
         if (key == null) throw new ArgumentNullException($"{nameof(key)} was null.");
-		int index = FindEntityIndex(key);
+		int index = FindEntityIndex(key, out _);
 
 		if (index == -1) return false;
 
-        _entities[index]!.Delete();
-        _entities[index] = new KeyValuePairEntity(new KeyValuePair<TKey, TValue>(key, default(TValue)!), true);
+        _entities[index]!.IsDeleted = true;
 
 		if (--_size <= Capacity * _loadFactor * RESIZE_SCALE && _size > DEFAILT_CAPACITY)
             Resize((int)(Capacity * RESIZE_SCALE));
@@ -175,7 +173,7 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		get
 		{
 			if (key == null) throw new ArgumentNullException($"{nameof(key)} was null");
-			int index = FindEntityIndex(key);
+			int index = FindEntityIndex(key, out _);
 			if (index == -1) throw new KeyNotFoundException($"{nameof(key)} is not presented in the hash table.");
 
 			return _entities[index]!.Kv.Value;
@@ -183,17 +181,17 @@ public abstract class HashTableOpenAddressingBase<TKey, TValue> : IDictionary<TK
 		set
 		{
 			if (key == null) throw new ArgumentNullException($"{nameof(key)} was null");
-			int index = FindEntityIndex(key);
+			int index = FindEntityIndex(key, out int hashCode);
 			if (index == -1) throw new KeyNotFoundException($"{nameof(key)} is not presented in the hash table.");
-			_entities[index]!.Kv = new KeyValuePair<TKey, TValue>(key, value);
+			_entities[index] = new(new KeyValuePair<TKey, TValue>(key, value), hashCode, false);
 		}
 	}
 
-	public ICollection<TKey> Keys => _addedValues.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv.Key).ToList();
-	public ICollection<TValue> Values => _addedValues.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv.Value).ToList();
+	public ICollection<TKey> Keys => _added.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv.Key).ToList();
+	public ICollection<TValue> Values => _added.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv.Value).ToList();
 
 	public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() 
-		=> _addedValues.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv).GetEnumerator();
+		=> _added.Where(ent => !ent.IsDeleted).Select(ent => ent.Kv).GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
