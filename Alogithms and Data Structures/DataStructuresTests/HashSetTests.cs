@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DataStructuresTests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DataStructuresTests;
@@ -8,60 +9,195 @@ namespace DataStructuresTests;
 [TestClass]
 public class HashSetTests
 {
-	private record Person(string Name, int Age);
-	
-	private IEnumerable<Person> _testData;
+    private DataStructures.HashSet<int> _hashSet = null!;
+	private HashSet<int> _set     = null!;
 
-	private Random               _rand = new Random(222);
-
-	private DataStructures.HashSet<Person> _hashSet;
-
-	private Func<Person, int> _hf = pers => pers.GetHashCode();//pers.Age * pers.Name.Length * 300;
-
-	private string RandomString(int length, Random random)
-	{
-		const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		return new string(Enumerable.Repeat(chars, length)
-									.Select(s => s[random.Next(s.Length)]).ToArray());
-	}
-
-	private IEnumerable<Person> GenerateTestData(Random rand, int size) 
-		=> Enumerable.Range(0, size).Select(i => new Person(RandomString(rand.Next(2, 10), rand), rand.Next(50)));
-
+	private ICollection<int> _testData;
 
 	[TestInitialize]
 	public void Initialize()
 	{
-		_testData = GenerateTestData(_rand, 100).ToArray();
-		_hashSet = new(_testData, null);
+		_set     = new HashSet<int>(Enumerable.Range(0, 10));
+		_hashSet = new DataStructures.HashSet<int>(Enumerable.Range(0, 10));
+
+		Random rand = new(2);
+		_testData = Enumerable.Range(0, 100).Select(i => rand.Next()).ToArray();
+	}
+
+    #region ICollection member's tests
+
+	[TestMethod]
+	public void CONSTRUCTION_FROM_ENUMERABLE() 
+		=> TestHelperICollection.CONSTRUCTION_FROM_ENUMERABLE(new DataStructures.HashSet<int>(_testData), 
+															  _testData.Distinct());
+
+	[TestMethod]
+	public void CONSTRUCTION_BY_ADDING() 
+		=> TestHelperICollection.CONSTRUCTION_BY_ADDING(new DataStructures.HashSet<int>(), _testData);
+
+	[TestMethod]
+	public void CONSTRUCTION_NULL_ENUMERABLE() 
+		=> TestHelperICollection.CONSTRUCTION_NULL_ENUMERABLE<int>(data => new DataStructures.HashSet<int>(data));
+
+	[TestMethod]
+	public void ADD_SUCCESSFUL() 
+		=> TestHelperICollection.ADD_SUCCESSFUL(new DataStructures.HashSet<int>(), 3);
+
+	[TestMethod]
+	public void ADD_NULL() 
+		=> TestHelperICollection.ADD_NULL(new DataStructures.HashSet<string>());
+
+	[TestMethod]
+	public void REMOVE_SUCCESSFUL() 
+		=> TestHelperICollection.REMOVE_SUCCESSFUL(_hashSet, _testData);
+
+	[TestMethod]
+	public void REMOVE_SUBSEQUENCE_FROM_MIDDLE() 
+		=> TestHelperICollection.REMOVE_SUBSEQUENCE_FROM_MIDDLE(new DataStructures.HashSet<int>(_testData), _testData);
+
+	[TestMethod]
+	public void REMOVE_NULL() 
+		=> TestHelperICollection.REMOVE_NULL(new DataStructures.HashSet<string>());
+
+	[TestMethod]
+	public void COPY_TO_FROM_0() 
+		=> TestHelperICollection.COPY_TO_FROM_0(_hashSet);
+
+	[TestMethod]
+	public void COPY_TO_FROM_MIDDLE() 
+		=> TestHelperICollection.COPY_TO_FROM_MIDDLE(_hashSet);
+
+	[TestMethod]
+	public void REMOVE_NOT_EXISTING() 
+		=> TestHelperICollection.REMOVE_NOT_EXISTING(_hashSet, 322);
+
+	#endregion
+
+	#region ISet member's tests
+
+	[TestMethod]
+    public void IS_PROPER_SUBSET_OF_SUCCESSFUL()
+    {
+		Assert.AreEqual(_hashSet.IsProperSubsetOf(Enumerable.Range(0, 100)),
+						_set.IsProperSubsetOf(Enumerable.Range(0, 100)));
+
+        Assert.AreEqual(_hashSet.IsProperSubsetOf(Enumerable.Range(0, 5)),
+						_set.IsProperSubsetOf(Enumerable.Range(0, 5)));
+
+        Assert.AreEqual(_hashSet.IsProperSubsetOf(Enumerable.Empty<int>()),
+						_set.IsProperSubsetOf(Enumerable.Empty<int>()));
+    }
+
+	[TestMethod]
+	public void IS_PROPER_SUBSET_OF_UNSUCCESSFUL() 
+		=> Assert.ThrowsException<ArgumentNullException>(() => _hashSet.IsProperSubsetOf(null!));
+
+	[TestMethod]
+    public void INTERSECT_WITH_UNSUCCESSFUL() 
+		=> Assert.ThrowsException<ArgumentNullException>(() => _hashSet.IntersectWith(null!));
+
+	[TestMethod]
+    public void EXCEPT_WITH_SUCCESSFUL()
+    {
+        _set.ExceptWith(Enumerable.Range(0, 5));
+		_hashSet.ExceptWith(Enumerable.Range(0, 5));
+
+        Assert.IsTrue(_set.SequenceEqual(_hashSet));
+
+        _set.ExceptWith(Enumerable.Empty<int>());
+		_hashSet.ExceptWith(Enumerable.Empty<int>());
+
+        Assert.IsTrue(_set.SequenceEqual(_hashSet));
+    }
+
+	[TestMethod]
+	public void EXCEPT_WITH_UNSUCCESSFUL() 
+		=> Assert.ThrowsException<ArgumentNullException>(() => _hashSet.ExceptWith(null!));
+
+	[TestMethod]
+	public void IS_PROPER_SUPERSET_OF_SUCCESSFUL()
+	{
+		var tmp = new System.Collections.Generic.HashSet<int>(Enumerable.Range(0, 10));
+
+		Assert.AreEqual(_hashSet.IsProperSupersetOf(Enumerable.Empty<int>()), 
+						tmp.IsProperSupersetOf(Enumerable.Empty<int>()));
+
+		Assert.AreEqual(_hashSet.IsProperSupersetOf(_set.SkipLast(3)), 
+						tmp.IsProperSupersetOf(_set.SkipLast(3)));
+
 	}
 
 	[TestMethod]
-	public void CONSTRUCTION_FROM_ENUMERABLE() => TestHelperICollection.CONSTRUCTION_FROM_ENUMERABLE(_hashSet, _testData);
+	public void IS_PROPER_SUPERSET_OF_UNSUCCESSFUL() 
+		=> Assert.ThrowsException<ArgumentNullException>(() => _hashSet.IsProperSubsetOf(null!));
 
 	[TestMethod]
-	public void CONSTRUCTION_BY_ADDING() =>
-		TestHelperICollection.CONSTRUCTION_BY_ADDING(
-			new DataStructures.HashSet<Person>(Enumerable.Empty<Person>(), null, _hf), _testData);
+	public void OVERLAPS_SUCCESSFUL()
+	{
+		var tmp = Enumerable.Range(0, 5);
+		Assert.AreEqual(_set.Overlaps(tmp), _hashSet.Overlaps(tmp));
+		Assert.AreEqual(_set.Overlaps(Enumerable.Empty<int>()), _hashSet.Overlaps(Enumerable.Empty<int>()));
+	}
 
 	[TestMethod]
-	public void CONSTRUCTION_NULL_ENUMERABLE() =>
-		TestHelperICollection.CONSTRUCTION_NULL_ENUMERABLE(
-			new Func<IEnumerable<Person>, ICollection<Person>>(ienum => new HashSet<Person>(ienum)));
+	public void OVERLAPS_UNSUCCESSFUL() 
+		=> Assert.ThrowsException<ArgumentNullException>(() => _hashSet.Overlaps(null!));
 
 	[TestMethod]
-	public void ADD_NULL() => TestHelperICollection.ADD_NULL(_hashSet);
+	public void SET_EQUALS_SUCCESSFUL()
+	{
+		var tmp = Enumerable.Range(0, 10);
+		var tmp1 = Enumerable.Range(0, 5);
+		Assert.AreEqual(_set.SetEquals(tmp), _hashSet.SetEquals(tmp));
+		Assert.AreEqual(_set.SetEquals(tmp1), _hashSet.SetEquals(tmp1));
+		Assert.AreEqual(_set.SetEquals(Enumerable.Empty<int>()), _hashSet.SetEquals(Enumerable.Empty<int>()));
+	}
 
 	[TestMethod]
-	public void REMOVE_SUCCESSFUL() => TestHelperICollection.REMOVE_SUCCESSFUL(new HashSet<Person>(), _testData);
+	public void SET_EQUALS_UNSUCCESSFUL() 
+		=> Assert.ThrowsException<ArgumentNullException>(() => _hashSet.SetEquals(null!));
 
 	[TestMethod]
-	public void REMOVE_SUBSEQUENCE_FROM_MIDDLE() => TestHelperICollection.REMOVE_SUBSEQUENCE_FROM_MIDDLE(_hashSet, _testData);
+	public void SYMMETRIC_EXCEPT_WITH_SUCCESSFUL()
+	{
+		var tmp = Enumerable.Range(5, 15);
+		var tmp1 = Enumerable.Range(6, 3);
+
+		_hashSet.SymmetricExceptWith(tmp);
+		_set.SymmetricExceptWith(tmp);
+
+		Assert.IsTrue(_set.SequenceEqual(_hashSet));
+
+		_hashSet.SymmetricExceptWith(tmp1);
+		_set.SymmetricExceptWith(tmp1);
+
+		Assert.IsTrue(_set.OrderBy(i => i).SequenceEqual(_hashSet.OrderBy(i => i)));
+	}
 
 	[TestMethod]
-	public void REMOVE_NULL() => TestHelperICollection.REMOVE_NULL(_hashSet);
+	public void SYMMETRIC_EXCEPT_WITH_UNSUCCESSFUL() 
+		=> Assert.ThrowsException<ArgumentNullException>(() => _hashSet.SymmetricExceptWith(null!));
 
 	[TestMethod]
-	public void REMOVE_NOT_EXISTING() => TestHelperICollection.REMOVE_NOT_EXISTING(_hashSet, new Person("aoosooso", 12));
+	public void UNION_WITH_SUCCESSFUL()
+	{
+		var tmp = Enumerable.Range(9, 10);
+		
+		_hashSet.UnionWith(tmp);
+		_set.UnionWith(tmp);
+
+		Assert.IsTrue(_set.SequenceEqual(_hashSet));
+
+		_hashSet.UnionWith(Enumerable.Empty<int>());
+		_set.UnionWith(Enumerable.Empty<int>());
+
+		Assert.IsTrue(_set.SequenceEqual(_hashSet));
+	}
+
+	[TestMethod]
+	public void UNION_WITH_UNSUCCESSFUL() 
+		=> Assert.ThrowsException<ArgumentNullException>(() => _hashSet.UnionWith(null!));
+
+    #endregion
 }
 
