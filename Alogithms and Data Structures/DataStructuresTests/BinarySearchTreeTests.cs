@@ -31,8 +31,8 @@ public class BinarySearchTreeTests : BinarySearchTree<int>
 		void PreOrderTraversal(BinarySearchTree<int>.TreeNode root, ref List<int> ret)
 		{
 			ret.Add(root.Value);
-			if (root.LeftChild != null) PreOrderTraversal(root.LeftChild, ref ret);
-			if (root.RightChild != null) PreOrderTraversal(root.RightChild, ref ret);
+			if (root.Left != null) PreOrderTraversal(root.Left, ref ret);
+			if (root.Right != null) PreOrderTraversal(root.Right, ref ret);
 		}
 
 		int[] arry = { 3, 16, 2, 14, 19, 8, 12, 1, 15, 2, 5, 78, 92, 122, 0, -1, 12, -155, 2, 67, 81, 93, 12 };
@@ -72,13 +72,13 @@ public class BinarySearchTreeTests : BinarySearchTree<int>
 		Assert.AreEqual(22, bst.Max());
 
 		bst.Add(3);
-		Assert.AreEqual(3, GetTreeNode(bst)!.LeftChild!.LeftChild!.RightChild!.LeftChild!.Value);
+		Assert.AreEqual(3, GetTreeNode(bst)!.Left!.Left!.Right!.Left!.Value);
 
 		bst.Add(8);
-		Assert.AreEqual(8, GetTreeNode(bst)!.RightChild!.LeftChild!.RightChild!.Value);
+		Assert.AreEqual(8, GetTreeNode(bst)!.Right!.Left!.Right!.Value);
 
 		bst.Add(14);
-		Assert.AreEqual(14, GetTreeNode(bst)!.RightChild!.RightChild!.LeftChild!.Value);
+		Assert.AreEqual(14, GetTreeNode(bst)!.Right!.Right!.Left!.Value);
 	}
 
 	[TestMethod]
@@ -92,20 +92,20 @@ public class BinarySearchTreeTests : BinarySearchTree<int>
 		//Remove a node with 2 children
 		bst.Remove(6);
 		Assert.AreEqual(7, GetTreeNode(bst)!.Value);
-		Assert.AreEqual(null, GetTreeNode(bst)!.RightChild!.LeftChild);
+		Assert.AreEqual(null, GetTreeNode(bst)!.Right!.Left);
 		Assert.AreEqual(arry.Length - 1, bst.Count);
 
 		//Remove a leaf
 		bst.Remove(4);
-		Assert.AreEqual(null, GetTreeNode(bst)!.LeftChild!.LeftChild!.RightChild);
+		Assert.AreEqual(null, GetTreeNode(bst)!.Left!.Left!.Right);
 
 		//remove a node with one right child
 		bst.Remove(12);
-		Assert.AreEqual(15, GetTreeNode(bst)!.RightChild!.Value);
+		Assert.AreEqual(15, GetTreeNode(bst)!.Right!.Value);
 
 		//remove a node with one left child
 		bst.Remove(5);
-		Assert.AreEqual(0, GetTreeNode(bst)!.LeftChild!.Value);
+		Assert.AreEqual(0, GetTreeNode(bst)!.Left!.Value);
 	}
 
 	[TestMethod]

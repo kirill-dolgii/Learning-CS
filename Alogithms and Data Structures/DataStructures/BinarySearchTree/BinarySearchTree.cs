@@ -19,21 +19,20 @@ public class BinarySearchTree<T> : ICollection<T>
 	{
 		public readonly T Value;
 
-		public TreeNode? LeftChild;
-		public TreeNode? RightChild;
+		public TreeNode? Left;
+		public TreeNode? Right;
 
-		public TreeNode(T elem)
+		public TreeNode(T elem, TreeNode? left, TreeNode? right)
 		{
 			Value = elem;
-			LeftChild = null;
-			RightChild = null;
+			Left = left;
+			Right = right;
 		}
 
-		public TreeNode(T elem, TreeNode? left, TreeNode? right) : this(elem)
-		{
-			LeftChild = left;
-			RightChild = right;
-		}
+		public TreeNode() : this (default(T)!, null, null) { }
+
+		public TreeNode(T elem) : this (elem, null, null) { }
+
 	}
 
 	/// <summary>
@@ -46,7 +45,7 @@ public class BinarySearchTree<T> : ICollection<T>
 	protected TreeNode? Root;
 
 	private readonly BinarySearchTreeSortOrder _order;
-	private readonly IComparer<T>              _comparer;
+	protected readonly IComparer<T>              _comparer;
 	public BinarySearchTree()
 	{
 		Root = null;
@@ -107,8 +106,8 @@ public class BinarySearchTree<T> : ICollection<T>
 		else
 		{
 			var cmp = this.Compare(item, addRoot.Value);
-			if (cmp <= 0) addRoot.LeftChild = Add(addRoot.LeftChild, item);
-			if (cmp > 0) addRoot.RightChild = Add(addRoot.RightChild, item);
+			if (cmp <= 0) addRoot.Left = Add(addRoot.Left, item);
+			if (cmp > 0) addRoot.Right = Add(addRoot.Right, item);
 		}
 
 		return addRoot;
@@ -140,8 +139,8 @@ public class BinarySearchTree<T> : ICollection<T>
 		while (node != null)
 		{
 			int cmp = this.Compare(item, node.Value);
-			if (cmp < 0) node = node.LeftChild;
-			else if (cmp > 0) node = node.RightChild;
+			if (cmp < 0) node = node.Left;
+			else if (cmp > 0) node = node.Right;
 			else return true;
 		}
 
@@ -177,7 +176,7 @@ public class BinarySearchTree<T> : ICollection<T>
 
 	private TreeNode Min(TreeNode minRoot)
 	{
-		while (minRoot.LeftChild != null) minRoot = minRoot.LeftChild;
+		while (minRoot.Left != null) minRoot = minRoot.Left;
 		return minRoot;
 	}
 
@@ -194,7 +193,7 @@ public class BinarySearchTree<T> : ICollection<T>
 
 	private TreeNode Max(TreeNode maxRoot)
 	{
-		while (maxRoot.RightChild != null) maxRoot = maxRoot.RightChild;
+		while (maxRoot.Right != null) maxRoot = maxRoot.Right;
 		return maxRoot;
 	}
 
@@ -218,23 +217,23 @@ public class BinarySearchTree<T> : ICollection<T>
 
 		var cmp = this.Compare(item, removeRoot.Value);
 
-		if (cmp == 1) removeRoot.RightChild = Remove(removeRoot.RightChild, item);
-		else if (cmp == -1) removeRoot.LeftChild = Remove(removeRoot.LeftChild, item);
+		if (cmp == 1) removeRoot.Right = Remove(removeRoot.Right, item);
+		else if (cmp == -1) removeRoot.Left = Remove(removeRoot.Left, item);
 		else
 		{
-			if (removeRoot.LeftChild == null && removeRoot.RightChild == null) return null;
+			if (removeRoot.Left == null && removeRoot.Right == null) return null;
 			//there are 2 leafs
-			if (removeRoot.RightChild != null && removeRoot.LeftChild != null)
+			if (removeRoot.Right != null && removeRoot.Left != null)
 			{
 				//find min, replace root with the min and remove min
-				var rightMin = Min(removeRoot.RightChild);
+				var rightMin = Min(removeRoot.Right);
 
-				rightMin.RightChild = Remove(removeRoot.RightChild, rightMin.Value);
-				rightMin.LeftChild = removeRoot.LeftChild;
+				rightMin.Right = Remove(removeRoot.Right, rightMin.Value);
+				rightMin.Left = removeRoot.Left;
 				return rightMin;
 			}
 
-			return removeRoot.LeftChild ?? removeRoot.RightChild;
+			return removeRoot.Left ?? removeRoot.Right;
 		}
 
 		return removeRoot;
@@ -281,18 +280,18 @@ public class BinarySearchTree<T> : ICollection<T>
 		{
 			if (_stack.Count == 0) return false;
 
-			while (_trav.LeftChild != null)
+			while (_trav.Left != null)
 			{
-				_stack.Push(_trav.LeftChild);
-				_trav = _trav.LeftChild;
+				_stack.Push(_trav.Left);
+				_trav = _trav.Left;
 			}
 
 			_current = _stack.Pop();
 
-			if (_current.RightChild != null)
+			if (_current.Right != null)
 			{
-				_stack.Push(_current.RightChild);
-				_trav = _current.RightChild;
+				_stack.Push(_current.Right);
+				_trav = _current.Right;
 			}
 
 			return true;
@@ -344,8 +343,8 @@ public class BinarySearchTree<T> : ICollection<T>
 		{
 			if (_stack.Count == 0) return false;
 			_current = _stack.Pop();
-			if (_current.RightChild != null) _stack.Push(_current.RightChild);
-			if (_current.LeftChild != null) _stack.Push(_current.LeftChild);
+			if (_current.Right != null) _stack.Push(_current.Right);
+			if (_current.Left != null) _stack.Push(_current.Left);
 			return true;
 		}
 
@@ -371,7 +370,7 @@ public class BinarySearchTree<T> : ICollection<T>
 		{
 			this._bst = bst ?? throw new ArgumentNullException(nameof(bst));
 			if (bst.Root == null) throw new NullReferenceException($"{nameof(bst.Root)} is null.");
-			_current = new TreeNode(bst.Root.Value, bst.Root.LeftChild, bst.Root.RightChild);
+			_current = new TreeNode(bst.Root.Value, bst.Root.Left, bst.Root.Right);
 			_queue.Enqueue(bst.Root);
 		}
 		
@@ -381,8 +380,8 @@ public class BinarySearchTree<T> : ICollection<T>
 
 			_current = _queue.Dequeue();
 
-			if (_current.LeftChild != null) _queue.Enqueue(_current.LeftChild);
-			if (_current.RightChild != null) _queue.Enqueue(_current.RightChild);
+			if (_current.Left != null) _queue.Enqueue(_current.Left);
+			if (_current.Right != null) _queue.Enqueue(_current.Right);
 
 			return true;
 		}
