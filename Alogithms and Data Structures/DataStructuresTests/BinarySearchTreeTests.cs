@@ -1,8 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
+using DataStructures;
 using DataStructures.BinarySearchTree;
-
 
 namespace DataStructuresTests;
 
@@ -17,7 +17,7 @@ public class BinarySearchTreeTests : BinarySearchTree<int>
 
 		var sorted = new List<int>();
 
-		using var iter = bst.GetEnumerator(Traversal.InOrder);
+		using var iter = bst.GetEnumerator(TreeTraversal.InOrder);
 		while (iter.MoveNext()) sorted.Add(iter.Current);
 
 		var list = new List<int>(arry).OrderBy(v => v);
@@ -28,7 +28,7 @@ public class BinarySearchTreeTests : BinarySearchTree<int>
 	[TestMethod]
 	public void PreOrderTraversalTest()
 	{
-		void PreOrderTraversal(BinarySearchTree<int>.TreeNode root, ref List<int> ret)
+		void PreOrderTraversal(IBinaryNode<TreeNode, int> root, ref List<int> ret)
 		{
 			ret.Add(root.Value);
 			if (root.Left != null) PreOrderTraversal(root.Left, ref ret);
@@ -40,7 +40,7 @@ public class BinarySearchTreeTests : BinarySearchTree<int>
 
 		var trav = new List<int>();
 
-		using var iter = bst.GetEnumerator(Traversal.PreOrder);
+		using var iter = bst.GetEnumerator(TreeTraversal.PreOrder);
 		while (iter.MoveNext()) trav.Add(iter.Current);
 
 		var goodTrav = new List<int>();

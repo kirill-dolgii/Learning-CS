@@ -15,12 +15,13 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// Represents a BinarySearchTree node - the base element of a tree.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	protected class TreeNode
+	protected class TreeNode : IBinaryNode<TreeNode, T>
 	{
-		public readonly T Value;
+		public T Value { get; set; }
 
-		public TreeNode? Left;
-		public TreeNode? Right;
+		public TreeNode? Parent { get; set; }
+		public TreeNode Left   { get; set; }
+		public TreeNode? Right  { get; set; }
 
 		public TreeNode(T elem, TreeNode? left, TreeNode? right)
 		{
@@ -38,10 +39,9 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// <summary>
 	/// Method used by test class to obtain protected Root outside of the instance.
 	/// </summary>
-	protected virtual TreeNode? GetTreeNode(BinarySearchTree<T> bst) => bst.Root;
+	protected virtual TreeNode GetTreeNode(BinarySearchTree<T> bst) => bst.Root;
 
-
-	private int       _size;
+	private   int          _size;
 	protected TreeNode? Root;
 
 	private readonly BinarySearchTreeSortOrder _order;
@@ -95,19 +95,19 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// <param name="item"></param>
 	public void Add(T item)
 	{
-		Add(Root, item);
+		Add(Root, ref item);
 		_size++;
 	}
 
 	// returns the subtree of the given TreeNode that contains new item.
-	private TreeNode Add(TreeNode? addRoot, T item)
+	private TreeNode? Add(TreeNode? addRoot, ref T item)
 	{
 		if (addRoot == null) addRoot = new TreeNode(item);
 		else
 		{
 			var cmp = this.Compare(item, addRoot.Value);
-			if (cmp <= 0) addRoot.Left = Add(addRoot.Left, item);
-			if (cmp > 0) addRoot.Right = Add(addRoot.Right, item);
+			if (cmp <= 0) addRoot.Left = Add(addRoot.Left, ref item);
+			if (cmp > 0) addRoot.Right = Add(addRoot.Right, ref item);
 		}
 
 		return addRoot;
@@ -154,7 +154,7 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// <param name="arrayIndex"></param>
 	public void CopyTo(T[] array, int arrayIndex)
 	{
-		using (var enumerator = this.GetEnumerator(Traversal.InOrder))
+		using (var enumerator = this.GetEnumerator(TreeTraversal.InOrder))
 		{
 			int i = arrayIndex;
 			for (int j = 0; j < i; j++) enumerator.MoveNext();
@@ -174,7 +174,7 @@ public class BinarySearchTree<T> : ICollection<T>
 		return this.Min(Root).Value;
 	}
 
-	private TreeNode Min(TreeNode minRoot)
+	protected TreeNode Min(TreeNode minRoot)
 	{
 		while (minRoot.Left != null) minRoot = minRoot.Left;
 		return minRoot;
@@ -242,17 +242,17 @@ public class BinarySearchTree<T> : ICollection<T>
 	public int Count => _size;
 	public bool IsReadOnly => false;
 
-	public IEnumerator<T> GetEnumerator() => GetEnumerator(Traversal.InOrder);
+	public IEnumerator<T> GetEnumerator() => GetEnumerator(TreeTraversal.InOrder);
 
-	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator(Traversal.InOrder);
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator(TreeTraversal.InOrder);
 
-	public IEnumerator<T> GetEnumerator(Traversal traversal)
+	public IEnumerator<T> GetEnumerator(TreeTraversal treeTraversal)
 	{
-		switch (traversal)
+		switch (treeTraversal)
 		{
-			case Traversal.InOrder: return new InOrderIterator(this);
-			case Traversal.PreOrder: return new PreOrderIterator(this);
-			case Traversal.LevelOrder: return new LevelOrderIterator(this);
+			case TreeTraversal.InOrder: return new InOrderIterator(this);
+			case TreeTraversal.PreOrder: return new PreOrderIterator(this);
+			case TreeTraversal.LevelOrder: return new LevelOrderIterator(this);
 		}
 
 		return new InOrderIterator(this);
@@ -263,7 +263,7 @@ public class BinarySearchTree<T> : ICollection<T>
 
 		private readonly BinarySearchTree<T> _bst;
 
-		private readonly Stack<TreeNode>  _stack = new();
+		private readonly Stack<TreeNode> _stack = new();
 
 		private TreeNode _trav;
 		private TreeNode _current;
@@ -271,7 +271,7 @@ public class BinarySearchTree<T> : ICollection<T>
 		public InOrderIterator(BinarySearchTree<T> bst)
 		{
 			this._bst = bst ?? throw new NullReferenceException(nameof(bst));
-			_trav = bst.Root ?? throw new NullReferenceException(nameof(bst.Root));
+			_trav = (bst.Root ?? throw new NullReferenceException(nameof(bst.Root)));
 			_stack.Push(bst.Root);
 			_current = bst.Root;
 		}
