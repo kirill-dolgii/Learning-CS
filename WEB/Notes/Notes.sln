@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{BB309C6C-9151-4C0C-A86B-5933B16136FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{FDC71946-7DFF-436F-9DB9-B7A02F7E56AA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence", "Persistence", "{7755FA68-2118-4A16-B18E-5907D73E5C44}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{26EDC6B3-2201-45D0-BCFC-83BFCC2CEDA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notes", "Notes\Notes.csproj", "{A5EEACEA-DDE5-4FCA-B635-49ECD532F00A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A5EEACEA-DDE5-4FCA-B635-49ECD532F00A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5EEACEA-DDE5-4FCA-B635-49ECD532F00A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5EEACEA-DDE5-4FCA-B635-49ECD532F00A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5EEACEA-DDE5-4FCA-B635-49ECD532F00A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A5EEACEA-DDE5-4FCA-B635-49ECD532F00A} = {BB309C6C-9151-4C0C-A86B-5933B16136FA}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {05E19464-5865-4ACB-B270-BA6AB902E895}
+	EndGlobalSection
+EndGlobal
