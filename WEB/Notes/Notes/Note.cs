@@ -13,7 +13,7 @@ namespace Notes
 		public string    Title        { get; set; }
 		public string    Details      { get; set; }
 		public DateTime  CreationTime { get; set; }
-		public DateTime? DateTime     { get; set; }
+		public DateTime? EditDate     { get; set; }
 
 	}
 }
