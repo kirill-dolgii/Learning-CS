@@ -363,3 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 Alogithms and Data Structures/Tests/Program.cs
 Alogithms and Data Structures/Tests/Tests.csproj
+WEB/Notes/Notes.WebAPI/Notes.db
+WEB/Notes/Notes.WebAPI/Notes.db-shm
+WEB/Notes/Notes.WebAPI/Notes.db-wal
