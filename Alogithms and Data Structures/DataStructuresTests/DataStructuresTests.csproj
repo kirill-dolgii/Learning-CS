@@ -19,4 +19,14 @@
     <ProjectReference Include="..\DataStructures\DataStructures.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\GraphTests\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Data\GraphTests\graph.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
