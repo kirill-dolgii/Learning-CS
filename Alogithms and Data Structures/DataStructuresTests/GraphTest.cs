@@ -3,9 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using DataStructures.Graph;
+using DataStructuresTests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DataStructuresTests.Helpers;
+namespace DataStructuresTests;
 
 [TestClass]
 public class GraphTests
@@ -21,14 +22,14 @@ public class GraphTests
         _testData = File.ReadAllLines(testDataPath).Select(raw => raw.Split(", ").Select(int.Parse).ToList()).ToList();
 
         _graph = new Graph<int, int>(false);
-        foreach (var raw in _testData) 
+        foreach (var raw in _testData)
             _graph.AddEdge(raw[0], raw[1], raw[2]);
     }
 
     [TestMethod]
     public void CONTAINS_NODE_SUCCESSFUL() =>
         TestHelperIGraph.CONTAINS_NODE_SUCCESSFUL(new Graph<int, int>(false), 0);
-    
+
     [TestMethod]
     public void CONTAINS_NODE_UNSUCCESSFUL() =>
         TestHelperIGraph.CONTAINS_NODE_SUCCESSFUL(new Graph<int, int>(false), 0);
@@ -65,7 +66,7 @@ public class GraphTests
     public void REMOVE_DIRECTED_EDGE_SUCCESSFUL()
     {
         _graph = new Graph<int, int>(true);
-        foreach (var raw in _testData) 
+        foreach (var raw in _testData)
             _graph.AddEdge(raw[0], raw[1], raw[0]);
         var x = _graph.Vertices.First();
         var y = _graph.AdjacentNodes(x).First();
