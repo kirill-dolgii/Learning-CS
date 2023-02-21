@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Algorithms;
-public interface ISolver
+public interface ISolver<TResult>
 {
 	public bool IsSolved { get; }
-
-	public void Solve();
+    public TResult Solve();
+    public TResult Result { get; }
 }
 

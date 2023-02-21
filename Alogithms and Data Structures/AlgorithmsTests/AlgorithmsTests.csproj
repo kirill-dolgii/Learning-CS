@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
@@ -18,6 +18,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Algorithms\Algorithms.csproj" />
     <ProjectReference Include="..\DataStructures\DataStructures.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Data\GraphAlgorithmsTests\graph.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

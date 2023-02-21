@@ -6,8 +6,8 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge> where TNode : notnull
 {
     private readonly IDictionary<TNode, HashSet<TNode>> _adjacent;
     private readonly IDictionary<(TNode x, TNode y), HashSet<TEdge>> _edges;
-    private readonly IEqualityComparer<TNode> _nodeEqualityComparer;
-    private readonly IEqualityComparer<TEdge> _edgeEqualityComparer;
+    public readonly IEqualityComparer<TNode> NodeEqualityComparer;
+    public readonly IEqualityComparer<TEdge> EdgeEqualityComparer;
     private int _edgesCount;
 
     /// <summary>
@@ -25,19 +25,19 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge> where TNode : notnull
                  IEqualityComparer<TEdge> edgeEqualityComparer, 
                  bool directed)
     {
-        _nodeEqualityComparer = nodeEqualityComparer;
+        NodeEqualityComparer = nodeEqualityComparer;
         _adjacent = adjacent.ToDictionary(kv => kv.Key, 
-                                          kv => new HashSet<TNode>(kv.Value, _nodeEqualityComparer), 
-                                          _nodeEqualityComparer);
+                                          kv => new HashSet<TNode>(kv.Value, NodeEqualityComparer), 
+                                          NodeEqualityComparer);
 
-        _edgeEqualityComparer = edgeEqualityComparer;
+        EdgeEqualityComparer = edgeEqualityComparer;
         IEqualityComparer<(TNode x, TNode y)> nodeTupleEqualityComparer = new CustomEqualityComparer<(TNode x, TNode y)>(
             (tpl1, tpl2) =>
-                _nodeEqualityComparer.Equals(tpl1.x, tpl2.x) &&
-                _nodeEqualityComparer.Equals(tpl1.y, tpl2.y),
-            tpl => _nodeEqualityComparer.GetHashCode(tpl.x) + 2 * _nodeEqualityComparer.GetHashCode(tpl.y));
+                NodeEqualityComparer.Equals(tpl1.x, tpl2.x) &&
+                NodeEqualityComparer.Equals(tpl1.y, tpl2.y),
+            tpl => NodeEqualityComparer.GetHashCode(tpl.x) + 2 * NodeEqualityComparer.GetHashCode(tpl.y));
         _edges = edges.ToDictionary(kv => kv.Key, 
-                                    kv => new HashSet<TEdge>(kv.Value, _edgeEqualityComparer), 
+                                    kv => new HashSet<TEdge>(kv.Value, EdgeEqualityComparer), 
                                     nodeTupleEqualityComparer);
 
         Directed = directed;
@@ -56,7 +56,7 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge> where TNode : notnull
     public void AddNode(TNode node)
     {
         if (ContainsNode(node)) return;
-        _adjacent[node] = new HashSet<TNode>(_nodeEqualityComparer);
+        _adjacent[node] = new HashSet<TNode>(NodeEqualityComparer);
     }
 
     public bool ContainsNode(TNode node) => _adjacent.ContainsKey(node);
@@ -64,7 +64,7 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge> where TNode : notnull
     public bool RemoveNode(TNode node)
     {
         if (!ContainsNode(node)) return false;
-        foreach (var kv in _edges.Where(kv => _nodeEqualityComparer.Equals(kv.Key.y, node)))
+        foreach (var kv in _edges.Where(kv => NodeEqualityComparer.Equals(kv.Key.y, node)))
         foreach (var edge in kv.Value)
             RemoveEdge(kv.Key.x, kv.Key.y, edge);
         _adjacent.Remove(node);
@@ -80,7 +80,7 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge> where TNode : notnull
         if (ContainsEdge(x, y, edge)) return;
         if (!ContainsNode(x)) AddNode(x);
         if (!ContainsNode(y)) AddNode(y);
-        _edges[(x, y)] = new HashSet<TEdge>(_edgeEqualityComparer)
+        _edges[(x, y)] = new HashSet<TEdge>(EdgeEqualityComparer)
         {
             edge
         };
