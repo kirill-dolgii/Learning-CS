@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using DataStructures.Graph;
+using DataStructures.Graph.Interfaces;
 
 namespace DataStructuresTests.Helpers;
 
@@ -14,7 +15,7 @@ public static class TestHelperIGraph
     public static void CONTAINS_NODE_SUCCESSFUL<TNode, TEdge>(Graph<TNode, TEdge> graph,
         TNode addingNode) where TNode : notnull
     {
-        if (graph.VerticesCount > 0) throw new InvalidOperationException("graph must be empty.");
+        if (graph.NodesCount > 0) throw new InvalidOperationException("graph must be empty.");
         graph.AddNode(addingNode);
         Assert.IsTrue(graph.ContainsNode(addingNode));
 
@@ -24,7 +25,7 @@ public static class TestHelperIGraph
     public static void CONTAINS_NODE_UNSUCCESSFUL<TNode, TEdge>(Graph<TNode, TEdge> graph,
         TNode checkingNode) where TNode : notnull
     {
-        if (graph.VerticesCount > 0) throw new InvalidOperationException("graph must be empty.");
+        if (graph.NodesCount > 0) throw new InvalidOperationException("graph must be empty.");
         Assert.IsFalse(graph.ContainsNode(checkingNode));
     }
 
@@ -32,20 +33,20 @@ public static class TestHelperIGraph
         where TNode : notnull
     {
         if (graph.ContainsNode(x)) throw new InvalidOperationException("graph already contains the specified node.");
-        var count = graph.VerticesCount;
+        var count = graph.NodesCount;
         graph.AddNode(x);
         Assert.IsTrue(graph.ContainsNode(x));
-        Assert.AreEqual(count + 1, graph.VerticesCount);
+        Assert.AreEqual(count + 1, graph.NodesCount);
     }
 
     public static void REMOVE_SINGLE_NODE_SUCCESSFUL<TNode, TEdge>(IGraph<TNode, TEdge> graph, TNode x)
         where TNode : notnull
     {
         if (!graph.ContainsNode(x)) throw new InvalidOperationException("graph doesn't contain specified node.");
-        var count = graph.VerticesCount;
+        var count = graph.NodesCount;
         Assert.IsTrue(graph.RemoveNode(x));
         Assert.IsFalse(graph.ContainsNode(x));
-        Assert.AreEqual(count - 1, graph.VerticesCount);
+        Assert.AreEqual(count - 1, graph.NodesCount);
     }
 
     public static void REMOVE_NODE_SUCCESSFUL<TNode, TEdge>(IGraph<TNode, TEdge> graph, TNode x)
@@ -58,10 +59,10 @@ public static class TestHelperIGraph
         var backEdges = adjacentNodes
             .SelectMany(y => graph.Edges(y, x).Select(edge => new { X = y, Y = x, Edge = edge })).ToList();
 
-        var count = graph.VerticesCount;
+        var count = graph.NodesCount;
         Assert.IsTrue(graph.RemoveNode(x));
         Assert.IsFalse(graph.ContainsNode(x));
-        Assert.AreEqual(count - 1, graph.VerticesCount);
+        Assert.AreEqual(count - 1, graph.NodesCount);
         foreach (var edge in edges)
             Assert.IsFalse(graph.ContainsEdge(edge.X, edge.Y, edge.Edge));
         foreach (var backEdge in backEdges)

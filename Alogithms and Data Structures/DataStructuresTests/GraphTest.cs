@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using DataStructures.Graph;
+using DataStructures.Graph.Interfaces;
 using DataStructuresTests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,7 +13,7 @@ namespace DataStructuresTests;
 public class GraphTests
 {
     private IEnumerable<IList<int>> _testData = new List<IList<int>>();
-    private IGraph<int, int> _graph = new Graph<int, int>(false);
+    private IMutableGraph<int, int> _graph = new Graph<int, int>(false);
 
     [TestInitialize]
     public void Initialize()
@@ -51,12 +52,12 @@ public class GraphTests
 
     [TestMethod]
     public void REMOVE_NODE_SUCCESSFUL() =>
-        TestHelperIGraph.REMOVE_NODE_SUCCESSFUL(_graph, _graph.Vertices.MaxBy(n => _graph.Degree(n)));
+        TestHelperIGraph.REMOVE_NODE_SUCCESSFUL(_graph, _graph.Nodes.MaxBy(n => _graph.Degree(n)));
 
     [TestMethod]
     public void REMOVE_UNDIRECTED_EDGE_SUCCESSFUL()
     {
-        var x = _graph.Vertices.First();
+        var x = _graph.Nodes.First();
         var y = _graph.AdjacentNodes(x).First();
         var edge = _graph.Edges(x, y).First();
         TestHelperIGraph.REMOVE_UNDIRECTED_EDGE_SUCCESSFUL(_graph, x, y, edge);
@@ -68,7 +69,7 @@ public class GraphTests
         _graph = new Graph<int, int>(true);
         foreach (var raw in _testData)
             _graph.AddEdge(raw[0], raw[1], raw[0]);
-        var x = _graph.Vertices.First();
+        var x = _graph.Nodes.First();
         var y = _graph.AdjacentNodes(x).First();
         var edge = _graph.Edges(x, y).First();
         _graph.AddEdge(y, x, edge);

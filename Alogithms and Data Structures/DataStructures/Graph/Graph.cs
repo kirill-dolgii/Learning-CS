@@ -1,13 +1,14 @@
+using DataStructures.Graph.Interfaces;
 using DataStructures.Misc;
 
 namespace DataStructures.Graph;
 
-public class Graph<TNode, TEdge> : IGraph<TNode, TEdge> where TNode : notnull
+public class Graph<TNode, TEdge> : IMutableGraph<TNode, TEdge> where TNode : notnull
 {
     private readonly IDictionary<TNode, HashSet<TNode>> _adjacent;
     private readonly IDictionary<(TNode x, TNode y), HashSet<TEdge>> _edges;
-    public readonly IEqualityComparer<TNode> NodeEqualityComparer;
-    public readonly IEqualityComparer<TEdge> EdgeEqualityComparer;
+    public IEqualityComparer<TNode> NodeEqualityComparer { get; }
+    public IEqualityComparer<TEdge> EdgeEqualityComparer { get; }
     private int _edgesCount;
 
     /// <summary>
@@ -20,10 +21,10 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge> where TNode : notnull
                                        directed) {}
 
     private Graph(IDictionary<TNode, ICollection<TNode>> adjacent, 
-                 IDictionary<(TNode, TNode), ICollection<TEdge>> edges, 
-                 IEqualityComparer<TNode> nodeEqualityComparer, 
-                 IEqualityComparer<TEdge> edgeEqualityComparer, 
-                 bool directed)
+                  IDictionary<(TNode, TNode), ICollection<TEdge>> edges, 
+                  IEqualityComparer<TNode> nodeEqualityComparer, 
+                  IEqualityComparer<TEdge> edgeEqualityComparer, 
+                  bool directed)
     {
         NodeEqualityComparer = nodeEqualityComparer;
         _adjacent = adjacent.ToDictionary(kv => kv.Key, 
@@ -48,6 +49,9 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge> where TNode : notnull
     public ICollection<TEdge> Edges(TNode x, TNode y) => _edges[(x, y)];
 
     public ICollection<TEdge> Edges(TNode x) => _adjacent[x].SelectMany(y => _edges[(x, y)]).ToList();
+
+    public ICollection<(TNode x, TNode y, TEdge edge)> Edges()
+        => _edges.SelectMany(kv => kv.Value.Select(edge => (kv.Key.x, kv.Key.y, edge))).ToList();
 
     public int EdgesCount => Directed ? _edgesCount : _edgesCount / 2;
 
@@ -104,6 +108,6 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge> where TNode : notnull
         return true;
     }
 
-    public ICollection<TNode> Vertices => _adjacent.Keys;
-    public int VerticesCount => _adjacent.Count;
+    public ICollection<TNode> Nodes => _adjacent.Keys;
+    public int NodesCount => _adjacent.Count;
 }

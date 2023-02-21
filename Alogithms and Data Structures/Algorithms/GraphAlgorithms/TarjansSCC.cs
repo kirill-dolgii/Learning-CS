@@ -1,4 +1,4 @@
-﻿using DataStructures.Graph;
+﻿using DataStructures.Graph.Interfaces;
 
 namespace Algorithms.GraphAlgorithms;
 
@@ -10,34 +10,31 @@ where TNode : notnull
 	private readonly IDictionary<TNode, int>         _id;
 	private readonly IDictionary<TNode, bool>        _onStack;
 	private readonly Stack<TNode>                    _stack;
-	private readonly IList<ICollection<TNode>> _components;
-	private          int                             _counter = -1;
+    private readonly IList<ICollection<TNode>> _components;
+    private int _counter = -1;
 
     public readonly IGraph<TNode, TEdge> Graph;
-    public readonly IEqualityComparer<TNode> NodeEqualityComparer;
 
-    public TarjansSCC(IGraph<TNode, TEdge> graph, 
-                      IEqualityComparer<TNode> nodeEqualityComparer)
+    public TarjansSCC(IGraph<TNode, TEdge> graph)
     {
         if (graph == null) throw new ArgumentNullException(nameof(graph));
         if (!graph.Directed) throw new InvalidOperationException("graph must be directed.");
 
         Graph = graph;
-        _low = Graph.Vertices.ToDictionary(n => n, _ => -1);
-        _id = Graph.Vertices.ToDictionary(n => n, _ => -1);
-        _visited = Graph.Vertices.ToDictionary(n => n, _ => false);
-        _onStack = Graph.Vertices.ToDictionary(n => n, _ => false);
-        _stack = new Stack<TNode>(Graph.VerticesCount);
+        _low = Graph.Nodes.ToDictionary(n => n, _ => -1, Graph.NodeEqualityComparer);
+        _id = Graph.Nodes.ToDictionary(n => n, _ => -1, Graph.NodeEqualityComparer);
+        _visited = Graph.Nodes.ToDictionary(n => n, _ => false, Graph.NodeEqualityComparer);
+        _onStack = Graph.Nodes.ToDictionary(n => n, _ => false, Graph.NodeEqualityComparer);
+        _stack = new Stack<TNode>(Graph.NodesCount);
         IsSolved = false;
         _components = new List<ICollection<TNode>>();
-        NodeEqualityComparer = nodeEqualityComparer;
     }
 
     public bool IsSolved { get; }
 	public IList<ICollection<TNode>> Solve()
 	{
         if (IsSolved) return Result;
-		foreach (var vertex in Graph.Vertices)
+		foreach (var vertex in Graph.Nodes)
 			if (!_visited[vertex])
 			{
 				var node = vertex;
@@ -69,7 +66,7 @@ where TNode : notnull
         {
             component.Add(n);
             _onStack[n] = false;
-            if (NodeEqualityComparer.Equals(node, n)) break;
+            if (Graph.NodeEqualityComparer.Equals(node, n)) break;
         }
         _components.Add(component);
     }
