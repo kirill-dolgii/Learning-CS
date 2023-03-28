@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DataStructuresTests.Helpers;
+using DataStructures.Tests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DataStructuresTests;
+namespace DataStructures.Tests;
 
 [TestClass]
 public class HashSetTests

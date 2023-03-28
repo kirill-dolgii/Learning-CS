@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DataStructures.Tests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using DataStructures;
-using DataStructuresTests.Helpers;
 
-namespace DataStructuresTests;
+namespace DataStructures.Tests;
 
 [TestClass]
 public class SkipListTests

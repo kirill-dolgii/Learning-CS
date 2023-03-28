@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DataStructuresTests.Helpers;
+namespace DataStructures.Tests.Helpers;
 
 public class TestHelperIDictionary
 {

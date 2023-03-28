@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+using DataStructures.Graph;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using DataStructures.Graph;
-
-namespace DataStructuresTests.Helpers;
+namespace DataStructures.Tests.Helpers;
 
 public static class TestHelperIGraph
 {

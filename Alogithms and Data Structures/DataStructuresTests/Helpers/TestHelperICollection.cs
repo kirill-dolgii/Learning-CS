@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DataStructuresTests.Helpers;
+namespace DataStructures.Tests.Helpers;
 public static class TestHelperICollection
 {
     public static void CONSTRUCTION_FROM_ENUMERABLE<T>(ICollection<T> enumConstructedCollection,

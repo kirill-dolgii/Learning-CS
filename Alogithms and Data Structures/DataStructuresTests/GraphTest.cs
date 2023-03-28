@@ -3,10 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using DataStructures.Graph;
-using DataStructuresTests.Helpers;
+using DataStructures.Tests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DataStructuresTests;
+namespace DataStructures.Tests;
 
 [TestClass]
 public class GraphTests

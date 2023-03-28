@@ -5,7 +5,7 @@ VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStructures", "DataStructures\DataStructures.csproj", "{AEB4DC95-B122-4165-A631-9B45E81FDC64}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStructuresTests", "DataStructuresTests\DataStructuresTests.csproj", "{1BDF7677-045D-41D6-BB73-959C2FA204EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStructures.Tests", "DataStructuresTests\DataStructures.Tests.csproj", "{1BDF7677-045D-41D6-BB73-959C2FA204EB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Algorithms", "Algorithms\Algorithms.csproj", "{492CB998-D2F4-4637-8249-7392E28A5C07}"
 EndProject
