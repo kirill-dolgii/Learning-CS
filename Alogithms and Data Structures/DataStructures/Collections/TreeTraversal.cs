@@ -1,4 +1,4 @@
-﻿namespace DataStructures;
+﻿namespace DataStructures.Collections;
 public enum TreeTraversal
 {
     InOrder,

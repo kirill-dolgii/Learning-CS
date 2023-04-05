@@ -1,4 +1,6 @@
-﻿namespace DataStructures;
+﻿using DataStructures.Collections.Hashing;
+
+namespace DataStructures;
 
 public class MapDictionary<TKey, TValue> : Map<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>
 {

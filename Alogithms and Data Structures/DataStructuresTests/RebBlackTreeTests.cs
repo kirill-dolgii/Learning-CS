@@ -1,4 +1,4 @@
-﻿using DataStructures.RedBlackTree;
+﻿using DataStructures.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DataStructures.Tests;

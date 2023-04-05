@@ -3,13 +3,13 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("DataStructures.Tests")]
 
-namespace DataStructures.RedBlackTree;
+namespace DataStructures.Collections;
 
 
 
 public class RedBlackTree<T> : ICollection<T>
 {
-	internal class RedBlackNode
+    internal class RedBlackNode
     {
         public RedBlackNode(RedBlackNode? parent,
                             T value,

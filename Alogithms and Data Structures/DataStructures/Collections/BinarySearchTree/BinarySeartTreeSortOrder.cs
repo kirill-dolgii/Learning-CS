@@ -1,4 +1,4 @@
-﻿namespace DataStructures.BinarySearchTree;
+﻿namespace DataStructures.Collections.BinarySearchTree;
 public enum BinarySearchTreeSortOrder
 {
     Ascdending = 1,

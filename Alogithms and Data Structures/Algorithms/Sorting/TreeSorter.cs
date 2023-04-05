@@ -1,4 +1,4 @@
-﻿using DataStructures.BinarySearchTree;
+﻿using DataStructures.Collections.BinarySearchTree;
 
 namespace Algorithms.Sorting;
 

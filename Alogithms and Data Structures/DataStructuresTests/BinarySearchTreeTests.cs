@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using DataStructures.BinarySearchTree;
+using DataStructures.Collections;
+using DataStructures.Collections.BinarySearchTree;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DataStructures.Tests;

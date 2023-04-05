@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using DataStructures.Collections.Hashing;
 
 namespace DataStructures;
 public class HashSet<T> : Map<T>, ISet<T>
