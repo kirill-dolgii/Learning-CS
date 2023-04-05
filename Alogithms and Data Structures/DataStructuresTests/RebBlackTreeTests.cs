@@ -1,154 +1,118 @@
-﻿using System.Reflection;
-using DataStructures.RedBlackTree;
+﻿using DataStructures.RedBlackTree;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DataStructuresTests;
+namespace DataStructures.Tests;
 
 [TestClass]
 public class RebBlackTreeTests
 {
-	private RedBlackTree<int>  _tree;
-	private IRedBlackNode<int> _root;
-
-	private IRedBlackNode<int> GetRoot(RedBlackTree<int> tree)
-	{
-		var rootObj = _tree!.GetType()!
-							.GetField("_root", System.Reflection.BindingFlags.NonPublic |
-											   System.Reflection.BindingFlags.Instance)!
-							.GetValue(_tree);
-		return (IRedBlackNode<int>)rootObj!;
-	}
-
-	private class Node<T> : IRedBlackNode<T>
-	{
-		public Node(IRedBlackNode<T>? parent,
-					T value,
-					IRedBlackNode<T>? left,
-					IRedBlackNode<T>? right,
-					bool isBlack)
-		{
-			Parent = parent;
-			Value = value;
-			Left = left;
-			Right = right;
-			IsBlack = isBlack;
-		}
-
-		public IRedBlackNode<T>? Parent  { get; set; }
-		public IRedBlackNode<T>? Left    { get; set; }
-		public IRedBlackNode<T>? Right   { get; set; }
-		public bool              IsBlack { get; set; }
-		public T                 Value   { get; }
-	}
-
-	[TestInitialize]
-	public void Init()
-	{
-		_tree = new();
-		_root = GetRoot(_tree);
-	}
-
 	[TestMethod]
 	public void ROTATION()
 	{
-		_tree = new();
-		_tree.Add(6);
-		_root = GetRoot(_tree);
+		var tree = new RedBlackTree<int> { 6 };
+		Assert.IsNotNull(tree._root);
+		var root = tree._root;
 
-		var l1 = new Node<int>(_root, 4, null, null, false);
-		_root.Left = l1;
-		var l2 = new Node<int>(l1, 3, null, null, false);
-		_root.Left.Left = l2;
-		var l1r1 = new Node<int>(l1, 5, null, null, false);
-		l1.Right = l1r1;
-		var r1 = new Node<int>(_root, 8, null, null, false);
-		_root.Right = r1;
-		var r1l1 = new Node<int>(r1, 7, null, null, false);
-		_root.Right.Left = r1l1;
-		var r2 = new Node<int>(r1, 9, null, null, false);
-		_root.Right.Right = r2;
+		var l = new RedBlackTree<int>.RedBlackNode(root, 4, null, null, false);
+		root.Left = l;
+		var ll = new RedBlackTree<int>.RedBlackNode(l, 3, null, null, false);
+		root.Left.Left = ll;
+		var lr = new RedBlackTree<int>.RedBlackNode(l, 5, null, null, false);
+		l.Right = lr;
+		var r1 = new RedBlackTree<int>.RedBlackNode(root, 8, null, null, false);
+		root.Right = r1;
+		var rl = new RedBlackTree<int>.RedBlackNode(r1, 7, null, null, false);
+		root.Right.Left = rl;
+		var rr = new RedBlackTree<int>.RedBlackNode(r1, 9, null, null, false);
+		root.Right.Right = rr;
 
-		MethodInfo leftRotate = _tree!.GetType()!
-									  .GetMethod("RotateLeft", BindingFlags.NonPublic | BindingFlags.Instance)!;
-		leftRotate.Invoke(_tree, new object[] { _root });
+		tree.RotateLeft(root);
 
-		Assert.AreEqual(r1, GetRoot(_tree));
-		Assert.AreEqual(r1.Left, _root);
-		Assert.AreEqual(r1.Right, r2);
-		Assert.AreEqual(_root.Left, l1);
-		Assert.AreEqual(_root.Right, r1l1);
-		Assert.AreEqual(l1.Left, l2);
-		Assert.AreEqual(l1.Right, l1r1);
+		Assert.AreEqual(r1, tree._root);
+		Assert.AreEqual(r1.Left, root);
+		Assert.AreEqual(r1.Right, rr);
+		Assert.AreEqual(root.Left, l);
+		Assert.AreEqual(root.Right, rl);
+		Assert.AreEqual(l.Left, ll);
+		Assert.AreEqual(l.Right, lr);
 
-		Assert.AreEqual(l2.Left, null);
-		Assert.AreEqual(l2.Right, null);
+		Assert.AreEqual(ll.Left, null);
+		Assert.AreEqual(ll.Right, null);
 
-		Assert.AreEqual(r1l1.Left, null);
-		Assert.AreEqual(r1l1.Right, null);
+		Assert.AreEqual(rl.Left, null);
+		Assert.AreEqual(rl.Right, null);
 
-		Assert.AreEqual(r2.Left, null);
-		Assert.AreEqual(r2.Right, null);
+		Assert.AreEqual(rr.Left, null);
+		Assert.AreEqual(rr.Right, null);
 
-		Assert.AreEqual(l2.Parent, l1);
-		Assert.AreEqual(l1r1.Parent, l1);
+		Assert.AreEqual(ll.Parent, l);
+		Assert.AreEqual(lr.Parent, l);
 
-		Assert.AreEqual(l1.Parent, _root);
-		Assert.AreEqual(r1l1.Parent, _root);
+		Assert.AreEqual(l.Parent, root);
+		Assert.AreEqual(rl.Parent, root);
 
-		Assert.AreEqual(_root.Parent, r1);
+		Assert.AreEqual(root.Parent, r1);
 
 		Assert.AreEqual(r1.Parent, null);
 
-		Assert.AreEqual(r2.Parent, r1);
+		Assert.AreEqual(rr.Parent, r1);
 	}
 
 	[TestMethod]
 	public void RED_BLACK_INSERTION()
 	{
-		_tree = new RedBlackTree<int>();
-		_tree.Add(33);
-		_root = GetRoot(_tree);
+		var tree    = new RedBlackTree<int> { 33 };
+		Assert.IsNotNull(tree._root);
+		var oldRoot = tree._root;
 
-		var l = new Node<int>(_root, 13, null, null, false);
-		_root.Left = l;
-		var ll = new Node<int>(_root.Left, 11, null, null, true);
-		_root.Left.Left = ll;
-		var lr = new Node<int>(_root.Left, 21, null, null, true);
-		_root.Left.Right = lr;
-		var lrl = new Node<int>(_root.Left.Right, 15, null, null, false);
-		_root.Left.Right.Left = lrl;
-		var lrr = new Node<int>(_root.Left.Right, 31, null, null, false);
-		_root.Left.Right.Right = lrr;
-		var r = new Node<int>(_root, 53, null, null, true);
-		_root.Right = r;
-		var rl = new Node<int>(_root.Right, 41, null, null, false);
-		_root.Right.Left = rl;
-		var rr = new Node<int>(_root.Right, 61, null, null, false);
-		_root.Right.Right = rr;
+		var l = new RedBlackTree<int>.RedBlackNode(oldRoot, 13, null, null, false);
+		oldRoot.Left = l;
+		var ll = new RedBlackTree<int>.RedBlackNode(oldRoot.Left, 11, null, null, true);
+		oldRoot.Left.Left = ll;
+		var lr = new RedBlackTree<int>.RedBlackNode(oldRoot.Left, 21, null, null, true);
+		oldRoot.Left.Right = lr;
+		var lrl = new RedBlackTree<int>.RedBlackNode(oldRoot.Left.Right, 15, null, null, false);
+		oldRoot.Left.Right.Left = lrl;
+		var lrr = new RedBlackTree<int>.RedBlackNode(oldRoot.Left.Right, 31, null, null, false);
+		oldRoot.Left.Right.Right = lrr;
+		var r = new RedBlackTree<int>.RedBlackNode(oldRoot, 53, null, null, true);
+		oldRoot.Right = r;
+		var rl = new RedBlackTree<int>.RedBlackNode(oldRoot.Right, 41, null, null, false);
+		oldRoot.Right.Left = rl;
+		var rr = new RedBlackTree<int>.RedBlackNode(oldRoot.Right, 61, null, null, false);
+		oldRoot.Right.Right = rr;
 
-		_tree.Add(20);
+		tree.Add(20);
 
-		Assert.AreEqual(lr, GetRoot(_tree));
+		Assert.IsNotNull(lr.Left);
+		Assert.IsNotNull(lr.Left.Right);
+		Assert.IsNotNull(lr.Left.Right.Right);
+		Assert.IsNotNull(lr.Right);
+		Assert.IsNotNull(lr.Right.Right);
+
+		Assert.AreEqual(lr, tree._root);
 		Assert.AreEqual(lr.Left, l);
 		Assert.AreEqual(lr.Left.Left, ll);
 		Assert.AreEqual(lr.Left.Right, lrl);
 		Assert.AreEqual(lr.Left.Right.Right.Value, 20);
 
-		Assert.AreEqual(lr.Right, _root);
+		Assert.AreEqual(lr.Right, oldRoot);
 		Assert.AreEqual(lr.Right.Left, lrr);
 		Assert.AreEqual(lr.Right.Right, r);
 		Assert.AreEqual(lr.Right.Right.Left, rl);
 		Assert.AreEqual(lr.Right.Right.Right, rr);
+
+		Assert.IsNotNull(lrl.Right);
 
 		Assert.AreEqual(lr.Parent, null);
 		Assert.AreEqual(l.Parent, lr);
 		Assert.AreEqual(ll.Parent, l);
 		Assert.AreEqual(lrl.Parent, l);
 		Assert.AreEqual(lrl.Right.Parent, lrl);
-		Assert.AreEqual(_root.Parent, lr);
-		Assert.AreEqual(lrr.Parent, _root);
+		Assert.AreEqual(oldRoot.Parent, lr);
+		Assert.AreEqual(lrr.Parent, oldRoot);
 
-		Assert.AreEqual(r.Parent, _root);
+		Assert.AreEqual(r.Parent, oldRoot);
 		Assert.AreEqual(rl.Parent, r);
 		Assert.AreEqual(rr.Parent, r);
 
@@ -159,10 +123,9 @@ public class RebBlackTreeTests
 		Assert.IsTrue(r.IsBlack);
 
 		Assert.IsFalse(l.IsBlack);
-		Assert.IsFalse(_root.IsBlack);
+		Assert.IsFalse(oldRoot.IsBlack);
 		Assert.IsFalse(lrl.Right.IsBlack);
 		Assert.IsFalse(rl.IsBlack);
 		Assert.IsFalse(rr.IsBlack);
-
 	}
 }

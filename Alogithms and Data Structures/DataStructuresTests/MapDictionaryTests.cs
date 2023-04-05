@@ -1,12 +1,10 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
-using DataStructures;
-using DataStructures.HashTable;
-using DataStructuresTests.Helpers;
+using DataStructures.Tests.Helpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DataStructuresTests;
+namespace DataStructures.Tests;
 
 [TestClass]
 public class MapDictionaryTests

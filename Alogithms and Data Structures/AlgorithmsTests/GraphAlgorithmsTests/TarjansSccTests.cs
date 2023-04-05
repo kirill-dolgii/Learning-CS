@@ -17,7 +17,7 @@ public class TarjansSccTests
         graph.AddEdge(3, 4, 2);
         graph.AddEdge(4, 3, 1);
 
-        var solver = new TarjansSCC<int, int>(graph, graph.NodeEqualityComparer);
+        var solver = new TarjansSCC<int, int>(graph);
         solver.Solve();
 
         var firstComponent = new[] { 0, 1, 2 };

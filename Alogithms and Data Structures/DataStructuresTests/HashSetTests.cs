@@ -1,15 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using DataStructuresTests.Helpers;
+
+using System.Collections.Generic;
+using MyHashSet = DataStructures.HashSet<int>;
+
+using DataStructures.Tests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DataStructuresTests;
+namespace DataStructures.Tests;
 
 [TestClass]
 public class HashSetTests
 {
-    private DataStructures.HashSet<int> _hashSet = null!;
+	private MyHashSet    _hashSet = null!;
 	private HashSet<int> _set     = null!;
 
 	private ICollection<int> _testData;
@@ -18,7 +21,7 @@ public class HashSetTests
 	public void Initialize()
 	{
 		_set     = new HashSet<int>(Enumerable.Range(0, 10));
-		_hashSet = new DataStructures.HashSet<int>(Enumerable.Range(0, 10));
+		_hashSet = new MyHashSet(Enumerable.Range(0, 10));
 
 		Random rand = new(2);
 		_testData = Enumerable.Range(0, 100).Select(i => rand.Next()).ToArray();
@@ -28,20 +31,20 @@ public class HashSetTests
 
 	[TestMethod]
 	public void CONSTRUCTION_FROM_ENUMERABLE() 
-		=> TestHelperICollection.CONSTRUCTION_FROM_ENUMERABLE(new DataStructures.HashSet<int>(_testData), 
+		=> TestHelperICollection.CONSTRUCTION_FROM_ENUMERABLE(new MyHashSet(_testData), 
 															  _testData.Distinct());
 
 	[TestMethod]
 	public void CONSTRUCTION_BY_ADDING() 
-		=> TestHelperICollection.CONSTRUCTION_BY_ADDING(new DataStructures.HashSet<int>(), _testData);
+		=> TestHelperICollection.CONSTRUCTION_BY_ADDING(new MyHashSet(), _testData);
 
 	[TestMethod]
 	public void CONSTRUCTION_NULL_ENUMERABLE() 
-		=> TestHelperICollection.CONSTRUCTION_NULL_ENUMERABLE<int>(data => new DataStructures.HashSet<int>(data));
+		=> TestHelperICollection.CONSTRUCTION_NULL_ENUMERABLE<int>(data => new MyHashSet(data));
 
 	[TestMethod]
 	public void ADD_SUCCESSFUL() 
-		=> TestHelperICollection.ADD_SUCCESSFUL(new DataStructures.HashSet<int>(), 3);
+		=> TestHelperICollection.ADD_SUCCESSFUL(new MyHashSet(), 3);
 
 	[TestMethod]
 	public void ADD_NULL() 
@@ -53,7 +56,7 @@ public class HashSetTests
 
 	[TestMethod]
 	public void REMOVE_SUBSEQUENCE_FROM_MIDDLE() 
-		=> TestHelperICollection.REMOVE_SUBSEQUENCE_FROM_MIDDLE(new DataStructures.HashSet<int>(_testData), _testData);
+		=> TestHelperICollection.REMOVE_SUBSEQUENCE_FROM_MIDDLE(new MyHashSet(_testData), _testData);
 
 	[TestMethod]
 	public void REMOVE_NULL() 

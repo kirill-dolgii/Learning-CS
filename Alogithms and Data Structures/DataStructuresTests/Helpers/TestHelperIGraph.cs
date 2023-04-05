@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using DataStructures.Graph;
 using DataStructures.Graph.Interfaces;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DataStructuresTests.Helpers;
+namespace DataStructures.Tests.Helpers;
 
 public static class TestHelperIGraph
 {
@@ -29,7 +28,7 @@ public static class TestHelperIGraph
         Assert.IsFalse(graph.ContainsNode(checkingNode));
     }
 
-    public static void ADD_SINGLE_NODE_SUCCESSFUL<TNode, TEdge>(IGraph<TNode, TEdge> graph, TNode x)
+    public static void ADD_SINGLE_NODE_SUCCESSFUL<TNode, TEdge>(IMutableGraph<TNode, TEdge> graph, TNode x)
         where TNode : notnull
     {
         if (graph.ContainsNode(x)) throw new InvalidOperationException("graph already contains the specified node.");
@@ -39,7 +38,7 @@ public static class TestHelperIGraph
         Assert.AreEqual(count + 1, graph.NodesCount);
     }
 
-    public static void REMOVE_SINGLE_NODE_SUCCESSFUL<TNode, TEdge>(IGraph<TNode, TEdge> graph, TNode x)
+    public static void REMOVE_SINGLE_NODE_SUCCESSFUL<TNode, TEdge>(IMutableGraph<TNode, TEdge> graph, TNode x)
         where TNode : notnull
     {
         if (!graph.ContainsNode(x)) throw new InvalidOperationException("graph doesn't contain specified node.");
@@ -49,7 +48,7 @@ public static class TestHelperIGraph
         Assert.AreEqual(count - 1, graph.NodesCount);
     }
 
-    public static void REMOVE_NODE_SUCCESSFUL<TNode, TEdge>(IGraph<TNode, TEdge> graph, TNode x)
+    public static void REMOVE_NODE_SUCCESSFUL<TNode, TEdge>(IMutableGraph<TNode, TEdge> graph, TNode x)
     {
         if (graph.Degree(x) == 0)
             throw new InvalidOperationException("there must be outcoming edges from specified node");
@@ -69,7 +68,7 @@ public static class TestHelperIGraph
             Assert.IsFalse(graph.ContainsEdge(backEdge.X, backEdge.Y, backEdge.Edge));
     }
 
-    public static void REMOVE_UNDIRECTED_EDGE_SUCCESSFUL<TNode, TEdge>(IGraph<TNode, TEdge> graph,
+    public static void REMOVE_UNDIRECTED_EDGE_SUCCESSFUL<TNode, TEdge>(IMutableGraph<TNode, TEdge> graph,
         TNode x, TNode y, TEdge edge)
     {
         if (!graph.ContainsEdge(x, y, edge))
@@ -82,7 +81,7 @@ public static class TestHelperIGraph
         Assert.AreEqual(edgeCount - 1, graph.EdgesCount);
     }
 
-    public static void REMOVE_DIRECTED_EDGE_SUCCESSFUL<TNode, TEdge>(IGraph<TNode, TEdge> graph, 
+    public static void REMOVE_DIRECTED_EDGE_SUCCESSFUL<TNode, TEdge>(IMutableGraph<TNode, TEdge> graph, 
                                                                      TNode x, TNode y, TEdge edge)
     {
         if (!graph.ContainsEdge(x, y, edge) || !graph.ContainsEdge(y, x, edge))

@@ -15,12 +15,12 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// Represents a BinarySearchTree node - the base element of a tree.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	protected class TreeNode : IBinaryNode<TreeNode, T>
+	internal class TreeNode : IBinaryNode<TreeNode, T>
 	{
 		public T Value { get; set; }
 
 		public TreeNode? Parent { get; set; }
-		public TreeNode Left   { get; set; }
+		public TreeNode? Left   { get; set; }
 		public TreeNode? Right  { get; set; }
 
 		public TreeNode(T elem, TreeNode? left, TreeNode? right)
@@ -36,21 +36,15 @@ public class BinarySearchTree<T> : ICollection<T>
 
 	}
 
-	/// <summary>
-	/// Method used by test class to obtain protected Root outside of the instance.
-	/// </summary>
-	protected virtual TreeNode GetTreeNode(BinarySearchTree<T> bst) => bst.Root;
+	private readonly BinarySearchTreeSortOrder _order   = BinarySearchTreeSortOrder.Ascdending;
+	internal TreeNode? _root;
+	private  int       _size;
 
-	private   int          _size;
-	protected TreeNode? Root;
-
-	private readonly BinarySearchTreeSortOrder _order;
-	protected readonly IComparer<T>              _comparer;
+	public readonly  IComparer<T>              Comparer = Comparer<T>.Default;
 	public BinarySearchTree()
 	{
-		Root = null;
+		_root = null;
 		_size = 0;
-		_comparer = Comparer<T>.Default;
 	}
 
 	public BinarySearchTree(IEnumerable<T> data,
@@ -60,18 +54,18 @@ public class BinarySearchTree<T> : ICollection<T>
 		if (data == null) throw new ArgumentNullException(nameof(data));
 		if (!data.Any()) throw new ArgumentException(nameof(data));
 
-		this.Root = new TreeNode(data.First());
+		this._root = new TreeNode(data.First());
 		this._size = 1;
 
 		_order = order;
-		_comparer = comparer ?? Comparer<T>.Default;
+		Comparer = comparer ?? Comparer<T>.Default;
 
 		foreach (T elem in data.Skip(1)) this.Add(elem);
 	}
 
 	public BinarySearchTree(IEnumerable<T> data) : this(data, BinarySearchTreeSortOrder.Ascdending, null) {}
 
-	public BinarySearchTree(IComparer<T> comparer) : this() => _comparer = comparer;
+	public BinarySearchTree(IComparer<T> comparer) : this() => Comparer = comparer;
 
 	public BinarySearchTree(BinarySearchTreeSortOrder order) : this() => _order = order;
 
@@ -85,7 +79,7 @@ public class BinarySearchTree<T> : ICollection<T>
 							IComparer<T> comparer) : this()
 	{
 		_order = order;
-		_comparer = comparer;
+		Comparer = comparer;
 	}
 
 	/// <summary>
@@ -95,14 +89,19 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// <param name="item"></param>
 	public void Add(T item)
 	{
-		Add(Root, ref item);
+		if (_root == null)
+		{
+			_root = new TreeNode(item);
+			return;
+		}
+		Add(_root, ref item);
 		_size++;
 	}
 
 	// returns the subtree of the given TreeNode that contains new item.
 	private TreeNode? Add(TreeNode? addRoot, ref T item)
 	{
-		if (addRoot == null) addRoot = new TreeNode(item);
+		if (addRoot == null) {addRoot = new TreeNode(item);}
 		else
 		{
 			var cmp = this.Compare(item, addRoot.Value);
@@ -115,7 +114,7 @@ public class BinarySearchTree<T> : ICollection<T>
 
 	private int Compare(T item1, T item2)
 	{
-		int compVal = this._comparer.Compare(item1, item2);
+		int compVal = this.Comparer.Compare(item1, item2);
 		return compVal * (int)_order;
 	}
 	
@@ -124,8 +123,8 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// </summary>
 	public void Clear()
 	{
-		this.Root = null;
-		this._size = 0;
+		_root = null;
+		_size = 0;
 	}
 
 	/// <summary>
@@ -135,7 +134,7 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// <returns></returns>
 	public bool Contains(T item)
 	{
-		var node = Root;
+		var node = _root;
 		while (node != null)
 		{
 			int cmp = this.Compare(item, node.Value);
@@ -154,13 +153,10 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// <param name="arrayIndex"></param>
 	public void CopyTo(T[] array, int arrayIndex)
 	{
-		using (var enumerator = this.GetEnumerator(TreeTraversal.InOrder))
-		{
-			int i = arrayIndex;
-			for (int j = 0; j < i; j++) enumerator.MoveNext();
-			while (enumerator.MoveNext()) array[i++] = enumerator.Current;
-		}
-
+		using var enumerator = this.GetEnumerator(TreeTraversal.InOrder);
+		int       i          = arrayIndex;
+		for (int j = 0; j < i; j++) enumerator.MoveNext();
+		while (enumerator.MoveNext()) array[i++] = enumerator.Current;
 	}
 
 	/// <summary>
@@ -170,11 +166,11 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// <exception cref="NullReferenceException"></exception>
 	public T Min()
 	{
-		if (Root == null) throw new NullReferenceException(nameof(Root));
-		return this.Min(Root).Value;
+		if (_root == null) throw new NullReferenceException(nameof(_root));
+		return this.Min(_root).Value;
 	}
 
-	protected TreeNode Min(TreeNode minRoot)
+	private TreeNode Min(TreeNode minRoot)
 	{
 		while (minRoot.Left != null) minRoot = minRoot.Left;
 		return minRoot;
@@ -187,8 +183,8 @@ public class BinarySearchTree<T> : ICollection<T>
 	/// <exception cref="NullReferenceException"></exception>
 	public T Max()
 	{
-		if (Root == null) throw new NullReferenceException(nameof(Root));
-		return this.Max(this.Root).Value;
+		if (_root == null) throw new NullReferenceException(nameof(_root));
+		return this.Max(this._root).Value;
 	}
 
 	private TreeNode Max(TreeNode maxRoot)
@@ -206,7 +202,7 @@ public class BinarySearchTree<T> : ICollection<T>
 	{
 		if (!Contains(item)) return false;
 
-		Root = Remove(Root, item);
+		_root = Remove(_root, item);
 		_size--;
 		return true;
 	}
@@ -271,9 +267,9 @@ public class BinarySearchTree<T> : ICollection<T>
 		public InOrderIterator(BinarySearchTree<T> bst)
 		{
 			this._bst = bst ?? throw new NullReferenceException(nameof(bst));
-			_trav = (bst.Root ?? throw new NullReferenceException(nameof(bst.Root)));
-			_stack.Push(bst.Root);
-			_current = bst.Root;
+			_trav = (bst._root ?? throw new NullReferenceException(nameof(bst._root)));
+			_stack.Push(bst._root);
+			_current = bst._root;
 		}
 		
 		public bool MoveNext()
@@ -299,16 +295,16 @@ public class BinarySearchTree<T> : ICollection<T>
 
 		public void Reset()
 		{
-			if (_bst.Root != null)
+			if (_bst._root != null)
 			{
-				_trav = _bst.Root;
-				_stack.Push(_bst.Root);
+				_trav = _bst._root;
+				_stack.Push(_bst._root);
 			}
 		}
 
 		public T Current => _current.Value;
 
-		object IEnumerator.Current => Current;
+		object IEnumerator.Current => throw new NotImplementedException();
 
 		public void Dispose()
 		{
@@ -327,8 +323,8 @@ public class BinarySearchTree<T> : ICollection<T>
 		public PreOrderIterator(BinarySearchTree<T> bst)
 		{
 			this._bst = bst ?? throw new NullReferenceException(nameof(bst));
-			_current = bst.Root ?? throw new NullReferenceException(nameof(bst.Root));
-			_stack.Push(bst.Root);
+			_current = bst._root ?? throw new NullReferenceException(nameof(bst._root));
+			_stack.Push(bst._root);
 		}
 		public T Current => _current.Value;
 
@@ -350,28 +346,28 @@ public class BinarySearchTree<T> : ICollection<T>
 
 		public void Reset()
 		{
-			if (_bst.Root != null)
+			if (_bst._root != null)
 			{
 				_stack.Clear();
-				_stack.Push(_bst.Root);
+				_stack.Push(_bst._root);
 			}
 		}
 	}
 
 	private class LevelOrderIterator : IEnumerator<T>
 	{
-		private BinarySearchTree<T> _bst;
+		private readonly BinarySearchTree<T> _bst;
 
-		private Queue<TreeNode> _queue = new();
+		private readonly Queue<TreeNode> _queue = new();
 
 		private TreeNode _current;
 
 		public LevelOrderIterator(BinarySearchTree<T> bst)
 		{
 			this._bst = bst ?? throw new ArgumentNullException(nameof(bst));
-			if (bst.Root == null) throw new NullReferenceException($"{nameof(bst.Root)} is null.");
-			_current = new TreeNode(bst.Root.Value, bst.Root.Left, bst.Root.Right);
-			_queue.Enqueue(bst.Root);
+			if (bst._root == null) throw new NullReferenceException($"{nameof(bst._root)} is null.");
+			_current = new TreeNode(bst._root.Value, bst._root.Left, bst._root.Right);
+			_queue.Enqueue(bst._root);
 		}
 		
 		public bool MoveNext()
@@ -388,10 +384,10 @@ public class BinarySearchTree<T> : ICollection<T>
 
 		public void Reset()
 		{
-			if (_bst.Root != null)
+			if (_bst._root != null)
 			{
 				_queue.Clear();
-				_queue.Enqueue(_bst.Root);
+				_queue.Enqueue(_bst._root);
 			}
 		}
 

@@ -1,15 +1,20 @@
 ﻿using System.Collections;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("DataStructures.Tests")]
 
 namespace DataStructures.RedBlackTree;
 
+
+
 public class RedBlackTree<T> : ICollection<T>
 {
-    private class RedBlackNode : IRedBlackNode<T>
+	internal class RedBlackNode
     {
-        public RedBlackNode(IRedBlackNode<T>? parent,
+        public RedBlackNode(RedBlackNode? parent,
                             T value,
-                            IRedBlackNode<T>? leftChild,
-                            IRedBlackNode<T>? rightChild,
+                            RedBlackNode? leftChild,
+                            RedBlackNode? rightChild,
                             bool isBlack)
         {
             Parent = parent;
@@ -19,15 +24,15 @@ public class RedBlackTree<T> : ICollection<T>
             Right = rightChild;
         }
 
-        public IRedBlackNode<T>? Parent { get; set; }
-        public IRedBlackNode<T>? Left { get; set; }
-        public IRedBlackNode<T>? Right { get; set; }
+        public RedBlackNode? Parent { get; set; }
+        public RedBlackNode? Left { get; set; }
+        public RedBlackNode? Right { get; set; }
         public bool IsBlack { get; set; }
         public T Value { get; }
     }
 
     private readonly IComparer<T> _comparer;
-    private IRedBlackNode<T>? _root;
+    internal RedBlackNode? _root;
     private int _count;
     public int Count => _count;
     public bool IsReadOnly => false;
@@ -52,7 +57,7 @@ public class RedBlackTree<T> : ICollection<T>
 
         if (Contains(value)) return;
 
-        IRedBlackNode<T> prev = FindPrev(value);
+        RedBlackNode prev = FindPrev(value);
         var node = new RedBlackNode(prev, value, null, null, false);
 
         int cmp = _comparer.Compare(value, prev.Value);
@@ -104,9 +109,9 @@ public class RedBlackTree<T> : ICollection<T>
 
     #endregion
 
-    private void ReplaceChild(IRedBlackNode<T>? parent,
-                              IRedBlackNode<T>? oldChild,
-                              IRedBlackNode<T>? newChild)
+    private void ReplaceChild(RedBlackNode? parent,
+                              RedBlackNode? oldChild,
+                              RedBlackNode? newChild)
     {
         if (parent == null && newChild == null) throw new AggregateException("root is lost");
 
@@ -117,12 +122,12 @@ public class RedBlackTree<T> : ICollection<T>
         if (newChild != null) newChild.Parent = parent;
     }
 
-    private void RotateRight(IRedBlackNode<T> node)
+    internal void RotateRight(RedBlackNode node)
     {
         if (node == null) throw new ArgumentNullException(nameof(node));
 
-        IRedBlackNode<T>? parent = node.Parent;
-        IRedBlackNode<T> left = node.Left!;
+        RedBlackNode? parent = node.Parent;
+        RedBlackNode left = node.Left!;
 
         if (left != null)
         {
@@ -138,12 +143,12 @@ public class RedBlackTree<T> : ICollection<T>
         }
     }
 
-    private void RotateLeft(IRedBlackNode<T> node)
+    internal void RotateLeft(RedBlackNode node)
     {
         if (node == null) throw new ArgumentNullException();
 
-        IRedBlackNode<T>? parent = node.Parent;
-        IRedBlackNode<T> right = node.Right!;
+        RedBlackNode? parent = node.Parent;
+        RedBlackNode right = node.Right!;
 
         if (right != null)
         {
@@ -159,11 +164,11 @@ public class RedBlackTree<T> : ICollection<T>
         }
     }
 
-    private IRedBlackNode<T> FindPrev(T value)
+    private RedBlackNode FindPrev(T value)
     {
         if (value == null) throw new ArgumentNullException();
-        IRedBlackNode<T>? node = _root;
-        IRedBlackNode<T> prevNode = _root!;
+        RedBlackNode? node = _root;
+        RedBlackNode prevNode = _root!;
 
         while (node != null)
         {
@@ -176,7 +181,7 @@ public class RedBlackTree<T> : ICollection<T>
 
         return prevNode;
     }
-    private void Transplaint(IRedBlackNode<T> node, IRedBlackNode<T> other)
+    private void Transplaint(RedBlackNode node, RedBlackNode other)
     {
         if (node == _root) _root = other;
         else if (node == node.Parent.Left) node.Parent.Left = other;
@@ -184,7 +189,7 @@ public class RedBlackTree<T> : ICollection<T>
         if (other != null) other.Parent = node.Parent;
     }
 
-    private void FixInsertion(IRedBlackNode<T> node)
+    private void FixInsertion(RedBlackNode node)
     {
         if (node == null) throw new ArgumentNullException();
         if (node == _root) return;
@@ -196,7 +201,7 @@ public class RedBlackTree<T> : ICollection<T>
 
             if (parent == grandParent.Right)
             {
-                IRedBlackNode<T>? uncle = grandParent.Left;
+                RedBlackNode? uncle = grandParent.Left;
 
                 if (uncle != null && !uncle.IsBlack)
                 {
@@ -250,13 +255,13 @@ public class RedBlackTree<T> : ICollection<T>
         _root.IsBlack = true;
     }
 
-    private bool Remove(IRedBlackNode<T> node, T value)
+    private bool Remove(RedBlackNode node, T value)
     {
         if (_root == null) throw new ArgumentNullException();
 
-        IRedBlackNode<T> z = _root!;
-        IRedBlackNode<T>? x = null;
-        IRedBlackNode<T> y = null;
+        RedBlackNode z = _root!;
+        RedBlackNode? x = null;
+        RedBlackNode y = null;
 
         while (node != null)
         {
@@ -314,9 +319,9 @@ public class RedBlackTree<T> : ICollection<T>
         return true;
     }
 
-    private void FixRemoval(IRedBlackNode<T>? x)
+    private void FixRemoval(RedBlackNode? x)
     {
-        IRedBlackNode<T> bro;
+        RedBlackNode bro;
         while (x != null && x != _root && x.IsBlack)
         {
             if (x == x.Parent.Left)
@@ -401,7 +406,7 @@ public class RedBlackTree<T> : ICollection<T>
 
     #region Enumerators
 
-    private IEnumerable<T> InOrderTraversal(IRedBlackNode<T> node)
+    private IEnumerable<T> InOrderTraversal(RedBlackNode node)
     {
         if (node == null) yield break;
         foreach (T item in InOrderTraversal(node.Left))
@@ -411,7 +416,7 @@ public class RedBlackTree<T> : ICollection<T>
             yield return item;
     }
 
-    private IEnumerable<T> PreOrderTraversal(IRedBlackNode<T> node)
+    private IEnumerable<T> PreOrderTraversal(RedBlackNode node)
     {
         if (node == null) yield break;
         yield return node.Value;
@@ -421,7 +426,7 @@ public class RedBlackTree<T> : ICollection<T>
             yield return item;
     }
 
-    private IEnumerable<T> PostOrderTraversal(IRedBlackNode<T> node)
+    private IEnumerable<T> PostOrderTraversal(RedBlackNode node)
     {
         if (node == null) yield break;
         foreach (T item in PostOrderTraversal(node.Left))
@@ -431,9 +436,9 @@ public class RedBlackTree<T> : ICollection<T>
         yield return node.Value;
     }
 
-    private IEnumerable<T> LevelOrderTraversal(IRedBlackNode<T> node)
+    private IEnumerable<T> LevelOrderTraversal(RedBlackNode node)
     {
-        var queue = new Queue.LinkedListQueue<IRedBlackNode<T>>();
+        var queue = new Queue.LinkedListQueue<RedBlackNode>();
         queue.Enqueue(node);
 
         while (!queue.IsEmpty())
